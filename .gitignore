@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Octave working files
+**/octave-workspace
+
 # C extensions
 *.so
 
