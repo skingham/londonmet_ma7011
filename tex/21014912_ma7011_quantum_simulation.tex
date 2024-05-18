@@ -4,13 +4,15 @@
 \usepackage[a4paper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 
 % Useful packages
-\usepackage[backend=biber, sorting=nyt, style=authoryear-ibid]{biblatex}
+% Harvard \usepackage[backend=biber, sorting=nyt, style=authoryear-ibid]{biblatex}
+\usepackage[backend=biber, sorting=nyt, style=ieee]{biblatex}
 \usepackage[inkscapeformat=png]{svg}
 \usepackage[outputdir=pdf]{minted}
 \usepackage{graphicx}
 \graphicspath{ {figures/} }
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 \usepackage{parskip}
+\usepackage{float}
 %\usepackage{lipsum}
 \usepackage{setspace}
 \doublespacing
@@ -18,12 +20,21 @@
 \usepackage{multirow}
 \usepackage{fontspec}
 \usepackage{fontawesome5}
-\usepackage{amsmath}
+\usepackage{amsmath,amssymb}
 \usepackage{csquotes}
 
+
+\ifPDFTeX
+  \usepackage[T1]{fontenc}    % Output font encoding for international characters
+  \usepackage[utf8]{inputenc} % Required for inputting international characters
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+
 % Document style
-%\usepackage[utf8]{inputenc} % Required for inputting international characters
-%\usepackage[T1]{fontenc} % Output font encoding for international characters
 %\usepackage{palatino} % Use the Palatino font
 %\usepackage{microtype} % Improves spacing
 %\usepackage[bf,sf,center]{titlesec} % Required for modifying section titles - bold, sans-serif, centered
@@ -82,7 +93,7 @@
        {\LARGE Applications in Cryptography and Cryptanalysis}
 
        \vspace*{1cm}
-       {\large \textbf{Quantum Simulation of Cryptographic Algorithms}}
+       {\large \textbf{Practical Quantum Circuits that Break Cryptography}}
        
        \vspace{0.2cm}
        {\large An Investigation into the Implementation of Quantum Circuits}
@@ -128,14 +139,22 @@
 
 \input{assignment_introduction}
 
-\input{assignment_quantum_crypto_algo}
-
-\input{assignment_simulation_implementation}
-
-\input{assignment_implications_for_future_developments}
+\pagebreak
+% Section 2 is an overview of the quantum computing concepts needed to understand the SDK
+% and the implementation of the two circuits.
+\input{assignment_quantum_computing_concepts}
 
 \pagebreak
+% Section 3 develops the actual code that runs on IBMs systems and shows the results, 
+% demonstrating the speedups and the practical limitations on the current generation of quantum computers.
+\input{assignment_shor_grover_implementation}
 
+\pagebreak
+% Section 4 is a review of the 
+% current mathematical cryptographic techniques and why they are thought to be immune to being broken by quantum computing.
+\input{assignment_post_quantum_cryptography}
+
+\pagebreak
 \input{assignment_conclusion}
 
 \pagebreak
