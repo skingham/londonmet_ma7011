@@ -1,6 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-When Peter Shor published \citetitle{Shor:1997} \cite{Shor:1997} in \citeyear{Shor:1997}, not only were no actual
+When Peter Shor published his original paper in \citeyear{Shor:1994} \cite{Shor:1994} and then his expanded paper,
+\citetitle{Shor:1994} in \citeyear{Shor:1997} \cite{Shor:1997}, not only were there no actual
 quantum computers in existence, but quantum computing research was in a nascent state.  Shor himself details the
 development of the idea of using quantum mechanics for computation in the early 1980s by Benioff [\ldots cite please]
 and the suggestion by Feynman [\ldots cite please] that quantum mechanics might be computationally more powerful
@@ -11,11 +12,11 @@ A brace of papers in the early 1990s by Deutsche and Jozsa [\ldots cite please] 
 problems, \emph{bounded error probability probabilistic polynomial time} (BPP),  that classical computers can solve
 quickly only with high probability using randomness \cite{Babai:1993}. 
 
-Shor's paper went substantially further by taking inspiration from from Simon in 1994 [\ldots cite], who refined an
-oracle problem and showed a quantum solution in polynomial time that requires exponential time on a classical computer.
-Shor tackled two number theory problems that underpin the Diffie-Helman \cite{Diffie:1976}, RSA \cite{Rivest:1978},
-and ElGamal \cite{ElGamal:1985} public key encryption and digital signature schemes; namely quantum algorithms for
-finding discrete logarithms and factor integers.
+Shor's papers went substantially further by taking inspiration from from Simon in 1994 [\ldots cite], who refined an
+oracle problem and who demonstrated a quantum solution in polynomial time that requires exponential time on a classical
+computer.  Shor tackled two number theory problems that underpin the Diffie-Helman \cite{Diffie:1976}, RSA
+\cite{Rivest:1978}, and ElGamal \cite{ElGamal:1985} public key encryption and digital signature schemes; namely quantum
+algorithms for finding discrete logarithms and factor integers.
 
 Following on from Shor, \citeauthor{Grover:1996} \citeyear{Grover:1996} \cite{Grover:1996} proved that quantum computers
 could perform an unstructured search with a quadratic speedup over a classical computing search
@@ -32,7 +33,7 @@ Actual quantum computers are now a reality, and will become more powerful each y
 Although thereare a plethora of quantum simulators available \cite{Dargan:2022}, both IBM \cite{IBM:2024a} and Google
 \cite{Google:2024a} have software development kits (SDKs) for python that allow quantum circuits to be designed and
 run on real quantum computing resources and quantum simulators.  This paper is seeks to demonstrate how to implement
-Shor's and Grover's algorithms using IBM's QISKIT SDK.
+Shor's and Grover's algorithms using IBM's \emph{Quantum Information Science Kit} (QISKIT) SDK.
 
 The rest of the paper is organised as follows. Section 2 is an overview of the quantum computing concepts needed to
 understand the SDK and the implementation of the two circuits.  Section 3 develops the actual code that runs on IBMs

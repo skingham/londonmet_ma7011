@@ -1,23 +1,30 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Quantum Computing Concepts}
 
-The fundamental building block of the is a \emph{qubit}.   Qubits can be constructed as [get details of IBM cubit], trapped-ion, photonics, silicon-based, and others
+The quantum computers now being constructed are a league away from the theoretical quantum computational models used by
+Shor and Grover.  And these algorithms are so well studied that quantum computer SDKs have them as pre-packaged classes
+\cite{Qiskit:2022} that do little to explain of how these quantum circuits work.
 
-Logical cubits can be made from more than one physical qubits [\ldots] to provide error correction.
+For that reason, in this section we will start with a review Shor's paper to understand quantum states and their
+notation, operations on two bit quantum gates, the necessity of unitary matrix operations, and the linkage of determinism
+and reversibility in quantum computations.
 
-\emph{Quantum gates} \href{https://en.wikipedia.org/wiki/Quantum_logic_gate}{wiki} are reversible unitary transformations on at least one qubit \ldots
+The second section is a quick review of the mappings of these concepts onto current quantum machinery.
 
-The model we use for quantum computation is  an \emph{acyclic quantum circuit} or \emph{quantum gate arrays}, where this computation is a sequence of quantum gates, measurements and initialisation of qubits to known values
-\href{https://en.wikipedia.org/wiki/Quantum_circuit}{wiki}
+\subsection{Quantum Algorithms}
 
-\emph{Decoherence}
-
-
-?The average T1 time of a qubit is the time it takes for a qubit to decay from the excited state to the ground state. It is important because it limits the duration of meaningful programs we can run on the quantum computer.,? stated in Qiskit Textbook (IBM, 2021b) within the section titled ?Calibrating Qubits with Qiskit Pulse.?
+\subsubsection{Quantum States, Notation \& Quantum Gates}
 
 Notation: we use Paul Dirac's bra-ket notation to 
 
-\subsection{Quantum Algorithms}
+\subsubsection{Unitary Matrix Operations}
+
+
+\subsubsection{Determinism \& Reversibility in Quantum Compuatations}
+
+
+\subsubsection{Quantum Fourier Transform}
+
 
 \subsubsection{Shor}
 
@@ -33,7 +40,22 @@ quantum computer to break the, now traditional, RSA \cite{Rivest:1978}, and Diff
 
 \subsubsection{Grover's Algorithm}
 
-\subsubsection{GEECM}
+\subsection{Current State Quantum Computing}
+
+The fundamental building block of the is a \emph{qubit}.   Qubits can be constructed as [get details of IBM cubit] super-conducting junctions, trapped-ion, photonics, silicon-based, and others
+
+Logical cubits can be made from more than one physical qubits [\ldots] to provide error correction.
+
+\emph{Quantum gates} \href{https://en.wikipedia.org/wiki/Quantum_logic_gate}{wiki} are reversible unitary transformations on at least one qubit \ldots
+
+The model we use for quantum computation is  an \emph{acyclic quantum circuit} or \emph{quantum gate arrays}, where this computation is a sequence of quantum gates, measurements and initialisation of qubits to known values
+\href{https://en.wikipedia.org/wiki/Quantum_circuit}{wiki}
+
+\emph{Decoherence}
+
+
+?The average T1 time of a qubit is the time it takes for a qubit to decay from the excited state to the ground state. It is important because it limits the duration of meaningful programs we can run on the quantum computer.,? stated in Qiskit Textbook (IBM, 2021b) within the section titled ?Calibrating Qubits with Qiskit Pulse.?
+
 
 
 
