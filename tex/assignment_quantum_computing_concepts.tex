@@ -3,58 +3,235 @@
 
 The quantum computers now being constructed are a league away from the theoretical quantum computational models used by
 Shor and Grover.  And these algorithms are so well studied that quantum computer SDKs have them as pre-packaged classes
-\cite{Qiskit:2022} that do little to explain of how these quantum circuits work.
+\cite{Qiskit:2023} that do little to explain of how these quantum circuits work.
 
 For that reason, in this section we will start with a review Shor's paper to understand quantum states and their
-notation, operations on two bit quantum gates, the necessity of unitary matrix operations, and the linkage of determinism
+notation, operations on two bit \emph{quantum gates}, the necessity of unitary matrix operations, and the linkage of determinism
 and reversibility in quantum computations.
 
-The second section is a quick review of the mappings of these concepts onto current quantum machinery.
+The actual mathematical analysis of the construction of Shor's algorithm is beyond the scope of this paper, so we
+concentrate only on the building blocks needed to understand the implementation of quantum circuits in the QISKIT SDK.
 
-\subsection{Quantum Algorithms}
+%The second section is a quick review of the mappings of these concepts onto current quantum machinery.
 
-\subsubsection{Quantum States, Notation \& Quantum Gates}
+%\subsection{Quantum Algorithms}
 
-Notation: we use Paul Dirac's bra-ket notation to 
+Shor's paper is comprehensive, but for this paper we need to unpack some background details of quantum mechanics and
+mathematical theory.  For this task we will take guidance from the \citetitle{Volovich:2001} lecture notes of \citeauthor{Volovich:2001}
+\cite{Volovich:2001}.
 
-\subsubsection{Unitary Matrix Operations}
+\subsection{Quantum States, Notation \& Quantum Gates}
+
+In both classical and quantum computing, we can define a \emph{gate} as function that maps some set of inputs onto
+some set of outputs.  These primitive elements can, as an example, represent the logical operations \emph{AND, OR} and
+\emph{NOT}.  If we represent the possible configurations of computations as $\mathbb{S}$ then
+$G = \lbrace g_1, \ldots, g_r \rbrace$ is a finite set of functions mapping $\mathbb{S}$ onto $\mathbb{S}$.  An
+algorithm is then a sequence of gates $A = \lbrace g_{i_1}, g_{i_2}, \ldots, g_{i_k} \rbrace$ that computes some function.
+
+The term \emph{Qubit} was first coined by \citeauthor{Schumacher:1995} in his \citeyear{Schumacher:1995} paper
+\citetitle{Schumacher:1995} \cite{Schumacher:1995} \enquote{in jest} to denote the quantum analog to the classical
+computing binary bit.  In quantum mechanics, the qubit can be represented by the two-dimensional complex Hilbert
+space $\mathbb{C}^2$.
+
+We need at least two basis elements to describe state vectors in this space, and so using the Paul Dirac's
+\emph{bra-ket} notation for quantum states and their transitions, we have the following \emph{computational basis},
+$e_x$ with index $x  = 0, 1$, as our quantum boolean variable:
+
+\begin{equation}
+  e_0 = \begin{bmatrix}1 \\ 0\end{bmatrix} , e_1 = \begin{bmatrix}0 \\ 1 \end{bmatrix} , e_x = | x \rangle
+\end{equation}
+
+An $n$ - qubit Hilbert space $\mathcal{H}$ is then the $n$-tuple tensor product of qubits:
+
+\[
+\mathbb{C}^2 \otimes \mathbb{C}^2 \otimes \ldots \otimes \mathbb{C}^2 = \mathbb{C}^{2^n}
+\]
+
+And this system has the computational basis:
+
+\begin{equation}
+e_{x_1} \otimes e_{x_2} \otimes \ldots \otimes e_{x_n} = | x_1, \ldots x_n \rangle
+\end{equation}
+
+%We can then represent the $n$ - qubit input state to any gate as:
+
+%\begin{equation}
+%  | \Psi \rangle
+%\end{equation}
+
+\subsection{Unitary Matrix Operations}
+
+Shor makes the point that in a physical system any computation \enquote{must be able to change the state of the
+ system} and points out that the laws of quantum mechanics allows only unitary transformations of state vectors.
+This means that state transformations are represented by unitary matrices, ensuring that the probability of outcomes
+yields one.  The definition of a unitary matrix is that the conjugate transpose is equal to its inverse, with the
+property that the corresponding eigenvalues are on the unit circle:
+
+\begin{equation}
+\begin{split}
+  UU^{\dagger} & = \mathbb{1} = U^{\dagger}U \\
+  | det(U) | & = 1
+\end{split}
+\end{equation}
+
+We reproduce the example that Shor gives for a two qubit \emph{quantum gate}, represented as a truth table:
+
+\begin{equation}
+\begin{split}
+ |00 \rangle & \rightarrow |00 \rangle, \\
+ |01 \rangle & \rightarrow |01 \rangle, \\
+ |10 \rangle & \rightarrow \frac{1}{\sqrt{2}}(|01 \rangle + |11 \rangle ), \\
+ |11 \rangle & \rightarrow \frac{1}{\sqrt{2}}(|01 \rangle - |11 \rangle )
+\end{split}
+\end{equation}
+
+This corresponds to the following matrix, where the rows correspond to input basis vectors, and
+columns correspond to output basis vectors. The $(i, j)$ denotes co-efficient where the $i$th basis vector is
+input to the gate and the $j$th vector is the gate output.
+
+\begin{equation}
+  \begin{blockarray}{ccccc}
+    & |00 \rangle & |01 \rangle & |10 \rangle & |11 \rangle \\
+\begin{block}{c[cccc]}
+|00 \rangle & 1 & 0 & 0 & 0 \bigstrut[t] \\
+|01 \rangle & 0 & 1 & 0 & 0 \\
+|10 \rangle & 0 & 0 & \frac{1}{\sqrt{2}} & \frac{1}{\sqrt{2}} \\
+|11 \rangle & 0 & 0 & \frac{1}{\sqrt{2}} & -\frac{1}{\sqrt{2}} \bigstrut[b]\\
+\end{block}
+\end{blockarray}\vspace*{-1.25\baselineskip}
+\end{equation}
+
+Only truth tables that are composable as a set of unitary transformations represent a physically feasible quantum
+system.  This is the case where the matrix corresponding to the gate is unitary, with an inverse that is its
+conjugate transpose.
+
+Suppose the machine is in the supposition of states:
+\[
+\frac{1}{\sqrt{2}} |10 \rangle - \frac{1}{\sqrt{2}} |11 \rangle
+\]
+
+Applying this unitary transformation to this state, multiplying by the given matrix, results in state:
+
+\[
+\frac{1}{2}(|10 \rangle | |11 \rangle) - \frac{1}{2}(|10 \rangle - |11 \rangle ) = |11 \rangle
+\]
+
+This example shows the effect of interference on quantum calculations.  Because we start with a supposition of
+states, the probability amplitudes for state $|01 \rangle$ cancel, given a zero probability of observing that
+state after the application of the gate.
+
+\subsection{Determinism \& Reversibility in Quantum Computations}
+
+Because quantum computers need to maintain the superposition of quantum states for the entire computation, they
+cannot dissipate energy and so adhere to the laws of physics being reversible.
+
+Classical computers do dissipate energy, making their calculations thermo-dynamically irreversible; in classical
+computing working with only the outputs of the calculation it is not necessarily possible to infer the starting
+state of the calculation.
+
+In quantum computing we have the opposite; a deterministic computation is performable only if it is reversible,
+and the state on the output of the wires tells us uniquely what the quantum state must have been on the wire
+leading into the gate.
+
+Shor describes how to construct reversible gates from non-reversible algorithms, and the space \& time trade-offs
+needed to do this.  He applies this method to the Sch\"onhage–Strassen algorithm \cite{Schonhage:1971} for integer
+multiplication, reasoning that if this step can be sped-up for modular exponentiation, then a quantum algorithm
+would be faster than the classical computation.  He also makes that point that the fast multiplication method
+uses the fast Fourier transform, which had been the basis of fast quantum algorithms to date.
+
+\subsection{Quantum Fourier Transform}
+
+The QFT is a quantum analog of the discrete Fourier transform.
+
+\begin{equation}
+  | a \rangle \rightarrow \frac{1}{\sqrt{2^N}} \sum_{c=0}^{2^{N}-1} exp(2 \pi iac/2^N) | c \rangle 
+\end{equation}
+
+Shor goes on to set out a scheme for composing
+qubit systems, allowing him to define the operation over two qubits only.  Building circuits
+is now standard and we can summarise the system construction as creating a superposition
+of states and applying controlled phase shifts between qubits to achieve the transform.  The process is
+iterative, applying these steps to the most significant qubit first, and then applying controlled phase
+shift gates to each subsequent qubit. 
+
+The construction of the gate uses a
+\emph{Hadamard gate} $H$ to put qubits into a superposition of states.  For a single qubit, this is
+represented by:
+
+\begin{equation}
+H = \frac{1}{\sqrt{2}} \begin{bmatrix}1 & 1 \\ 1 & -1 \end{bmatrix} 
+\end{equation}
+
+QFT phase shifts are applied to the bits in positions $j$ \& $k$, with $j < k$:
+\begin{equation}
+  CP_{j,k} =                                                      
+  \begin{blockarray}{ccccc}
+    & |00 \rangle & |01 \rangle & |10 \rangle & |11 \rangle \\
+\begin{block}{c[cccc]}
+|00 \rangle & 1 & 0 & 0 & 0 \bigstrut[t] \\
+|01 \rangle & 0 & 1 & 0 & 0 \\
+|10 \rangle & 0 & 0 & 1 & 0 \\
+|11 \rangle & 0 & 0 & 0 & e^{i\theta_{k-j}} \bigstrut[b]\\
+\end{block}
+\end{blockarray}\vspace*{-1.25\baselineskip}
+\end{equation}
+
+where $\theta_{k-j} = \pi / 2^{k-j}$.
 
 
-\subsubsection{Determinism \& Reversibility in Quantum Compuatations}
+\subsection{Shor's Algorithms}
+
+In a nutshell, Shor knows from the randomisation algorithms that to solve factorisation of $N = p q$, where $p$ and $q$
+are primes, it is enough to find the order of some element $m$ in the multiplicative group of residues modulo $N$; that
+is, to find the smallest integer $r$ such that $m^r \equiv 1 \pmod{N}$.
+
+The steps Shor outlines in his paper for prime factorisation are:
+\begin{enumerate}
+\item Preparation of the quantum state.
+\item Modular exponentiation gate construction.
+\item The Quantum Fourier transform algorithm.
+\item Result measurement.
+\item Post processing of the quantum result using classical computation techniques.
+\end{enumerate}
+
+Shor then reuses this work to describe an algorithm to find a \emph{discrete logarithm} $r$ of a number $x$ with
+respect to $p$ and $g$ with $0 \leq r < p  - 1$ such that $g^r \equiv x \pmod{p}$.  He does this with two modular
+exponentiations and two quantum Fourier transforms using three quantum registers.
+
+\subsection{Grover's Algorithm}
+
+Grover's algorithm \cite{Grover:1996} is a quantum search algorithm that can search an unsorted database in $O(n^{1/2})$
+time, giving a quadratic speed-up over the classical algorithm time of $O(n)$.   The algorithm is performed using search
+iterations, and so is probabilistic in nature.
+
+The steps of the algorithm are:
+\begin{enumerate}
+\item Initialisation: apply the Hadamard gate to all $n$-qubits to get an equal superposition of states.
+  \[ H^{\otimes n} | 0 \rangle =\frac{1}{\sqrt{N}} \sum_{x=0}^{N-1} | x \rangle \]
+\item Apply the oracle: the correct solution is marked by flipping its phase.
+\item Apply a diffusion operator: Pauli-X gate and controlled Z gate to amplify the probability of the correct solution.
+\item Repeat the oracle and diffusion steps approximately $O(\sqrt{N})$ times.
+  \item Measure qubits to obtain the solution with high probability.
+\end{enumerate}
+
+%\subsection{Current State Quantum Computing}
+%
+%The fundamental building block of the is a \emph{qubit}.   Qubits can be constructed as [get details of IBM cubit]
+%super-conducting junctions, trapped-ion, photonics, silicon-based, and others
+%
+%Logical cubits can be made from more than one physical qubits [\ldots] to provide error correction.
+%
+%\emph{Quantum gates} \href{https://en.wikipedia.org/wiki/Quantum_logic_gate}{wiki} are reversible unitary
+%transformations on at least one qubit \ldots
+
+%The model we use for quantum computation is  an \emph{acyclic quantum circuit} or \emph{quantum gate arrays}, where this
+%computation is a sequence of quantum gates, measurements and initialisation of qubits to known values
+%\href{https://en.wikipedia.org/wiki/Quantum_circuit}{wiki}
+
+%\emph{Decoherence}
 
 
-\subsubsection{Quantum Fourier Transform}
-
-
-\subsubsection{Shor}
-
-When it was published in \citeyear{Shor:1997} there were no actual quantum computers in existence, but
-Peter Shor's paper \citetitle{Shor:1997} \cite{Shor:1997},
-Following on from Bernstein and Vazirani [1993] and  Simon [1994], who an oracle problem which takes
-polynomial time on a quantum computer but requires exponential time on a classical computer  ushered into
-practical quantum algorithms using a \emph{quantum gate array} to construct subroutines that were used
-in his algorithms to of reversible modular exponentiation, quantum Fourier transforms, prime factorisation
-and solving discrete algorithms.  The last two showing the practical application of the hypothetical
-quantum computer to break the, now traditional, RSA \cite{Rivest:1978}, and Diffie-Hellman \cite{Diffie:1976}
-\& ElGamal \cite{ElGamal:1985} public-key cryptographic schemes.
-
-\subsubsection{Grover's Algorithm}
-
-\subsection{Current State Quantum Computing}
-
-The fundamental building block of the is a \emph{qubit}.   Qubits can be constructed as [get details of IBM cubit] super-conducting junctions, trapped-ion, photonics, silicon-based, and others
-
-Logical cubits can be made from more than one physical qubits [\ldots] to provide error correction.
-
-\emph{Quantum gates} \href{https://en.wikipedia.org/wiki/Quantum_logic_gate}{wiki} are reversible unitary transformations on at least one qubit \ldots
-
-The model we use for quantum computation is  an \emph{acyclic quantum circuit} or \emph{quantum gate arrays}, where this computation is a sequence of quantum gates, measurements and initialisation of qubits to known values
-\href{https://en.wikipedia.org/wiki/Quantum_circuit}{wiki}
-
-\emph{Decoherence}
-
-
-?The average T1 time of a qubit is the time it takes for a qubit to decay from the excited state to the ground state. It is important because it limits the duration of meaningful programs we can run on the quantum computer.,? stated in Qiskit Textbook (IBM, 2021b) within the section titled ?Calibrating Qubits with Qiskit Pulse.?
+%?The average T1 time of a qubit is the time it takes for a qubit to decay from the excited state to the ground state. It is important because it limits the duration of meaningful programs we can run on the quantum computer.,? stated in Qiskit Textbook (IBM, 2021b) within the section titled ?Calibrating Qubits with Qiskit Pulse.?
 
 
 

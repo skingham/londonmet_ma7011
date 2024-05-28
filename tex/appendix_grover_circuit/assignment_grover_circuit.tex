@@ -1,0 +1,115 @@
+    \hypertarget{grover-algorithm}{%
+\section{Appendix: Grover Algorithm}\label{grover-algorithm}}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{1}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Built\PYZhy{}in modules}
+\PY{k+kn}{import} \PY{n+nn}{math}
+
+\PY{c+c1}{\PYZsh{} Imports from Qiskit}
+\PY{k+kn}{from} \PY{n+nn}{qiskit} \PY{k+kn}{import} \PY{n}{QuantumCircuit}
+\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{circuit}\PY{n+nn}{.}\PY{n+nn}{library} \PY{k+kn}{import} \PY{n}{GroverOperator}\PY{p}{,} \PY{n}{MCMT}\PY{p}{,} \PY{n}{ZGate}
+\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{visualization} \PY{k+kn}{import} \PY{n}{plot\PYZus{}distribution}
+
+\PY{c+c1}{\PYZsh{} Imports from Qiskit Runtime}
+\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}ibm\PYZus{}runtime} \PY{k+kn}{import} \PY{n}{QiskitRuntimeService}
+\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}ibm\PYZus{}runtime} \PY{k+kn}{import} \PY{n}{SamplerV2} \PY{k}{as} \PY{n}{Sampler}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{2}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} Load saved credentials}
+\PY{n}{service} \PY{o}{=} \PY{n}{QiskitRuntimeService}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{3}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} To run on hardware, select the backend with the fewest number of jobs in the queue}
+\PY{n}{service} \PY{o}{=} \PY{n}{QiskitRuntimeService}\PY{p}{(}\PY{n}{channel}\PY{o}{=}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{ibm\PYZus{}quantum}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\PY{n}{backend} \PY{o}{=} \PY{n}{service}\PY{o}{.}\PY{n}{least\PYZus{}busy}\PY{p}{(}\PY{n}{operational}\PY{o}{=}\PY{k+kc}{True}\PY{p}{,} \PY{n}{simulator}\PY{o}{=}\PY{k+kc}{False}\PY{p}{)}
+\PY{n}{backend}\PY{o}{.}\PY{n}{name}
+\end{Verbatim}
+\end{tcolorbox}
+
+            \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
+\prompt{Out}{outcolor}{3}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+'ibm\_osaka'
+\end{Verbatim}
+\end{tcolorbox}
+        
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{4}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{k}{def} \PY{n+nf}{grover\PYZus{}oracle}\PY{p}{(}\PY{n}{marked\PYZus{}states}\PY{p}{)}\PY{p}{:}
+\PY{+w}{    }\PY{l+s+sd}{\PYZdq{}\PYZdq{}\PYZdq{}Build a Grover oracle for multiple marked states}
+
+\PY{l+s+sd}{    Here we assume all input marked states have the same number of bits}
+
+\PY{l+s+sd}{    Parameters:}
+\PY{l+s+sd}{        marked\PYZus{}states (str or list): Marked states of oracle}
+
+\PY{l+s+sd}{    Returns:}
+\PY{l+s+sd}{        QuantumCircuit: Quantum circuit representing Grover oracle}
+\PY{l+s+sd}{    \PYZdq{}\PYZdq{}\PYZdq{}}
+    \PY{k}{if} \PY{o+ow}{not} \PY{n+nb}{isinstance}\PY{p}{(}\PY{n}{marked\PYZus{}states}\PY{p}{,} \PY{n+nb}{list}\PY{p}{)}\PY{p}{:}
+        \PY{n}{marked\PYZus{}states} \PY{o}{=} \PY{p}{[}\PY{n}{marked\PYZus{}states}\PY{p}{]}
+    \PY{c+c1}{\PYZsh{} Compute the number of qubits in circuit}
+    \PY{n}{num\PYZus{}qubits} \PY{o}{=} \PY{n+nb}{len}\PY{p}{(}\PY{n}{marked\PYZus{}states}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{p}{)}
+
+    \PY{n}{qc} \PY{o}{=} \PY{n}{QuantumCircuit}\PY{p}{(}\PY{n}{num\PYZus{}qubits}\PY{p}{)}
+    \PY{c+c1}{\PYZsh{} Mark each target state in the input list}
+    \PY{k}{for} \PY{n}{target} \PY{o+ow}{in} \PY{n}{marked\PYZus{}states}\PY{p}{:}
+        \PY{c+c1}{\PYZsh{} Flip target bit\PYZhy{}string to match Qiskit bit\PYZhy{}ordering}
+        \PY{n}{rev\PYZus{}target} \PY{o}{=} \PY{n}{target}\PY{p}{[}\PY{p}{:}\PY{p}{:}\PY{o}{\PYZhy{}}\PY{l+m+mi}{1}\PY{p}{]}
+        \PY{c+c1}{\PYZsh{} Find the indices of all the \PYZsq{}0\PYZsq{} elements in bit\PYZhy{}string}
+        \PY{n}{zero\PYZus{}inds} \PY{o}{=} \PY{p}{[}\PY{n}{ind} \PY{k}{for} \PY{n}{ind} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{num\PYZus{}qubits}\PY{p}{)} \PY{k}{if} \PY{n}{rev\PYZus{}target}\PY{o}{.}\PY{n}{startswith}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{0}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{ind}\PY{p}{)}\PY{p}{]}
+        \PY{c+c1}{\PYZsh{} Add a multi\PYZhy{}controlled Z\PYZhy{}gate with pre\PYZhy{} and post\PYZhy{}applied X\PYZhy{}gates (open\PYZhy{}controls)}
+        \PY{c+c1}{\PYZsh{} where the target bit\PYZhy{}string has a \PYZsq{}0\PYZsq{} entry}
+        \PY{n}{qc}\PY{o}{.}\PY{n}{x}\PY{p}{(}\PY{n}{zero\PYZus{}inds}\PY{p}{)}
+        \PY{n}{qc}\PY{o}{.}\PY{n}{compose}\PY{p}{(}\PY{n}{MCMT}\PY{p}{(}\PY{n}{ZGate}\PY{p}{(}\PY{p}{)}\PY{p}{,} \PY{n}{num\PYZus{}qubits} \PY{o}{\PYZhy{}} \PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{,} \PY{n}{inplace}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}
+        \PY{n}{qc}\PY{o}{.}\PY{n}{x}\PY{p}{(}\PY{n}{zero\PYZus{}inds}\PY{p}{)}
+    \PY{k}{return} \PY{n}{qc}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{5}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{marked\PYZus{}states} \PY{o}{=} \PY{p}{[}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{011}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{100}\PY{l+s+s2}{\PYZdq{}}\PY{p}{]}
+
+\PY{n}{oracle} \PY{o}{=} \PY{n}{grover\PYZus{}oracle}\PY{p}{(}\PY{n}{marked\PYZus{}states}\PY{p}{)}
+\PY{n}{oracle}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{n}{output}\PY{o}{=}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{mpl}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{style}\PY{o}{=}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{iqp}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{5}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_5_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{6}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{oracle}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{n}{output}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{latex}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{style}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{iqp}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{6}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_6_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+

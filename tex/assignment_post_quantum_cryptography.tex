@@ -1,12 +1,73 @@
 \section{Post-Quantum Cryptography}
 
+Quantum systems can only break asymmetric cryptographic ciphers that, at their core, have mathematical problems that
+appear to have exponential, or worse, complexity under classical computing, but
+that can be solved more efficiently using quantum circuits algorithms.  The breaking of RSA and ElGamal
+schemes by Shor's algorithms is instructive, as it uses a particular class of quantum gate, the QFT, to
+speed up known algorithms to factor integers and solve discrete logarithm problems.
 
+When NIST announced \cite{NIST:2022} in \citeyear{NIST:2022} the group of four PQC specifications selected, for general
+encryption this was the CRYSTALS-Kyber algorithm; selected in part for the comparatively small encryption keys that two
+parties can exchange easily and its speed of operation.  And for digital signatures NIST selected the three algorithms:
+CRYSTALS-Dilithium, FALCON and SPHINCS+.
 
-Quantum systems can only break cryptographic ciphers that, at their core, have mathematical problems that
-appear to be NP hard \textbf{check wording here; are all ciphers NP hard} under classical computing, but
-that can be solved more quickly \textbf{lower time complexity? poly time?} using quantum circuits or
-algorithms, such as Shor, Grove, that we saw in the previous section.
+Of these, three of the algorithms are based on lattice schemes, and SPHINCS+ was selected, in part, as it
+was not based on lattices, but hashing, as a backup.  NIST still is accepting new algorithms and we can
+expect new standards to be added as new techniques arise.
 
-When NIST announced \cite{NIST:2022} the group of four post-quantum cryptographic specifications to
-pass the first round of evaluations, the list of technologies had been whittled down by two, removing
-\ldots and \ldots.   \ldots would also be dropped in \citeyear{NIST:2022} \cite{NIST:2022}. 
+In the \citeyear{Yalamuri:2022} paper \citetitle{Yalamuri:2022}, \citeauthor{Yalamuri:2022} identify six families of crypto-systems
+that have attributes that appear at present to have an assumption of being hard for anticipated
+quantum computers.
+
+In this section we give the briefest review of these families, and some reasons for there being a lack
+of efficient quantum algorithms that would break these schemes.
+
+\subsection{Lattice-based Cryptography}
+
+Lattice schemes have well researched problems such as the \emph{Shortest Vector Problem} (SVP) and
+\emph{Learning With Errors} (LWE) known to be difficult.  These problems have the attribute that
+solving the average-case instance is as hard as solving for the worst case.
+
+The problems also involve high-dimensional geometric structures for which current quantum algorithms
+struggle with.  These rich mathematical structures, along with the introduction of small random
+errors in LWE for example, gives weight to the belief that they are robust against attacks.
+
+\subsection{Code-based Cryptography}
+
+Using the knowledge that the McEliece scheme remains unbroken, schemes bases on the difficulty of
+decoding randomly generated linear codes - especially Goppa codes - are seen as a promising
+bases for new schemes that have smaller key sizes than the McEliece system.
+
+The general decoding problem for linear codes is believed to be hard for both classical and
+quantum computers.
+
+\subsection{Hash-based Cryptography}
+
+Hash based schemes have minimal security assumptions, and have shown provable security properties
+in studies.  Having a long history in digital signature protocols, there are promising
+candidates for PQC.
+
+\subsection{Multivariate Cryptography}
+
+The authors of the study point out that although many multivariate codes have been broken, many
+have not.  The hardness of solving multivariate quadratic equations over finite fields is known
+to be NP-hard.  There are also a variety of existent schemes - Rainbow, Unbalanced Oil and vinegar (UOV),
+Hidden Field Equations (HFE), Multivariate Quadrant (MQ) problems - and this provides a rich
+area of research to improve key sizes to make these codes more practical.
+
+\subsection{Isogeny-based Cryptography}
+
+Although computational complexity is a problem for Isogenies-based schemes, this class relies
+on the difficulty of computing isogenies between elliptic curves, especially super-singular isogeny
+graphs where there is significant research.
+
+The security of these schemes are based on well studied mathematical problems, but there is
+a question whether smaller devices can cope with the computational requirements.
+
+\subsection{Symmetric-key-based Cryptography}
+
+For AES, and other similar symmetric schemes, the vulnerability to brute force attacks using Grover's algorithm
+can be mitigated by increasing the key length.  The attractiveness of using such schemes for PQC is
+tempered by the fact that they do not yet allow the properties of digital signing and non-repudiation that
+asymmetric schemes give.
+

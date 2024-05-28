@@ -13,6 +13,7 @@
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 \usepackage{parskip}
 \usepackage{float}
+\floatplacement{figure}{H} % forces figures to be placed at the correct location
 %\usepackage{lipsum}
 \usepackage{setspace}
 \doublespacing
@@ -20,9 +21,11 @@
 \usepackage{multirow}
 \usepackage{fontspec}
 \usepackage{fontawesome5}
+
 \usepackage{amsmath,amssymb}
 \usepackage{csquotes}
-
+\usepackage{mathtools}
+\usepackage{blkarray, bigstrut}
 
 \ifPDFTeX
   \usepackage[T1]{fontenc}    % Output font encoding for international characters
@@ -33,6 +36,8 @@
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
 \fi
+
+\usepackage{jupyter}
 
 % Document style
 %\usepackage{palatino} % Use the Palatino font
@@ -122,7 +127,10 @@
 \pagebreak
 
 \begin{abstract}
-  Abstract
+  In this paper I look at back to Shor's original paper on the quantum
+  calculation of the discrete logarithm problem and integer
+  factorisation and use the IBM quantum computing SDK \emph{QISKIT} to
+  implement the algorithm.
 \end{abstract}
 
 \newpage
@@ -139,22 +147,19 @@
 
 \input{assignment_introduction}
 
-\pagebreak
 % Section 2 is an overview of the quantum computing concepts needed to understand the SDK
 % and the implementation of the two circuits.
 \input{assignment_quantum_computing_concepts}
 
-\pagebreak
+% \pagebreak
 % Section 3 develops the actual code that runs on IBMs systems and shows the results, 
 % demonstrating the speedups and the practical limitations on the current generation of quantum computers.
 \input{assignment_shor_grover_implementation}
 
-\pagebreak
 % Section 4 is a review of the 
 % current mathematical cryptographic techniques and why they are thought to be immune to being broken by quantum computing.
 \input{assignment_post_quantum_cryptography}
 
-\pagebreak
 \input{assignment_conclusion}
 
 \pagebreak
@@ -165,7 +170,18 @@
 
 \appendix
 
-\input{assignment_appendix_code}                   
+\input{appendix_environment}
+
+\singlespace
+\graphicspath{ {appendix_qiskit_intro/} }
+\input{appendix_qiskit_intro/assignment_qiskit_intro}
+
+\graphicspath{ {appendix_shor_circuit/} }
+\input{appendix_shor_circuit/assignment_shor_circuit}
+
+\graphicspath{ {appendix_grover_circuit/} }
+\input{appendix_grover_circuit/assignment_grover_circuit}
+
 
 \end{document}
 

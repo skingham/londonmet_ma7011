@@ -1,38 +1,40 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-When Peter Shor published his original paper in \citeyear{Shor:1994} \cite{Shor:1994} and then his expanded paper,
-\citetitle{Shor:1994} in \citeyear{Shor:1997} \cite{Shor:1997}, not only were there no actual
+When Peter Shor published his original paper in \citeyear{Shor:1994} \cite{Shor:1994} -- and then his expanded paper 
+\citetitle{Shor:1994} in \citeyear{Shor:1997} \cite{Shor:1997} -- not only were there no actual
 quantum computers in existence, but quantum computing research was in a nascent state.  Shor himself details the
-development of the idea of using quantum mechanics for computation in the early 1980s by Benioff [\ldots cite please]
-and the suggestion by Feynman [\ldots cite please] that quantum mechanics might be computationally more powerful
+development of the idea of using quantum mechanics for computation in the early 1980s by Benioff \cite{Benioff:1982}
+and the suggestion by Feynman \cite{Feynman:1986} that quantum mechanics might be computationally more powerful
 than Turing machines.  
 
-A brace of papers in the early 1990s by Deutsche and Jozsa [\ldots cite please] and Berthiaume and Brassard
-[\ldots cite please] went further showing that a quantum computer could solve exactly and quickly a class of 
-problems, \emph{bounded error probability probabilistic polynomial time} (BPP),  that classical computers can solve
-quickly only with high probability using randomness \cite{Babai:1993}. 
+A brace of papers in the early 1990s by Deutsch and Jozsa \cite{Deutsch:1992} and Berthiaume and Brassard
+\cite{Berthiaume:1992} went further showing that a quantum computer could solve exactly and quickly a class of 
+problems -- \emph{bounded error probability probabilistic polynomial time} (BPP) problems  -- that classical computers
+can solve quickly only with high probability by using randomness \cite{Babai:1993}, and demonstrated this using the
+\emph{oracle problem}.
 
-Shor's papers went substantially further by taking inspiration from from Simon in 1994 [\ldots cite], who refined an
-oracle problem and who demonstrated a quantum solution in polynomial time that requires exponential time on a classical
-computer.  Shor tackled two number theory problems that underpin the Diffie-Helman \cite{Diffie:1976}, RSA
-\cite{Rivest:1978}, and ElGamal \cite{ElGamal:1985} public key encryption and digital signature schemes; namely quantum
-algorithms for finding discrete logarithms and factor integers.
+Shor's papers went substantially further by taking inspiration from from Simon's 1994 paper \citetitle{Simon:1994}
+\cite{Simon:1994} which refined the oracle problem and who demonstrated a quantum solution in polynomial time that
+would require exponential time on a classical computer.  Shor tackled two number theory problems that underpin the
+Diffie-Helman \cite{Diffie:1976}, RSA \cite{Rivest:1978}, and ElGamal \cite{ElGamal:1985} public key encryption
+and digital signature schemes; namely quantum algorithms for finding discrete logarithms and factoring integers.
 
 Following on from Shor, \citeauthor{Grover:1996} \citeyear{Grover:1996} \cite{Grover:1996} proved that quantum computers
 could perform an unstructured search with a quadratic speedup over a classical computing search
-($O(\sqrt{N})$ vs $O(N)$.)  Whilst not reducing an exponential problem to a polynomial time problem, it does allow the
-practical brute-force applications.
- 
-Because of the importance of both of these quantum circuits in breaking classical encryption schemes they are also
-important to understand from a practical vantage point.  These quantum algorithms provide a floor from which new
-research can be expected to find better and faster quantum algorithms.  Having exposure to these quantum circuit
-ideas should also help in understanding why new \emph{post-quantum cryptography} (PQC) schemes from NIST
-\cite{NIST:2022} are currently thought to be immune to quantum computer attacks.
+($O(\sqrt{N})$ vs $O(N)$.)  Whilst not reducing an exponential problem to a polynomial time problem, it still does
+allow some practical brute-force attacks.
 
-Actual quantum computers are now a reality, and will become more powerful each year and the technology advances.
-Although thereare a plethora of quantum simulators available \cite{Dargan:2022}, both IBM \cite{IBM:2024a} and Google
+Because of the importance of both of these quantum circuits in breaking classical encryption schemes it is
+important to understand their construction from a practical vantage point.  These quantum algorithms provide a floor
+from which new research can be expected to find better and faster quantum algorithms.  Having exposure to these
+quantum circuit ideas should also help in understanding why new \emph{post-quantum cryptography} (PQC) schemes from
+NIST \cite{NIST:2022} are currently thought to be immune to quantum computer attacks.
+
+Current quantum computers, while not at the point of quantum supremacy, will become more powerful each year as the
+technology advances.  These advances are being made available to researchers and students through various quantum
+computing simulators \cite{Dargan:2022}, and  both IBM \cite{IBM:2024a} and Google
 \cite{Google:2024a} have software development kits (SDKs) for python that allow quantum circuits to be designed and
-run on real quantum computing resources and quantum simulators.  This paper is seeks to demonstrate how to implement
+run on real quantum computing hardware and quantum simulators.  This paper is seeks to demonstrate how to implement
 Shor's and Grover's algorithms using IBM's \emph{Quantum Information Science Kit} (QISKIT) SDK.
 
 The rest of the paper is organised as follows. Section 2 is an overview of the quantum computing concepts needed to
@@ -42,16 +44,6 @@ quantum computers.  Section 4 is a review of the current mathematical cryptograp
 thought to be immune to being broken by quantum computing.  Section 5 is the conclusion and my thoughts on what I
 have learnt writing this report.
 
-
-\begin{quote}
-?By using quantum mechanics in a computer can you compute more efficiently than on a classical computer?? The first to ask this question explicitly was Deutsch [1985, 1989]. In order to study this question, he defined both quantum Turing machines and quantum circuits and investigated some of their properties.
-
-The question of whether using quantum mechanics in a computer allows one to obtain more computational power was more recently addressed by Deutsch and Jozsa [1992] and Berthiaume and Brassard [1992, 1994]. These papers showed that there are problems which quantum computers can quickly solve exactly, but that classical computers can only solve quickly with high probability and the aid of a random number generator.
-
-However, these papers did not show how to solve any problem in quantum polynomial time that was not already known to be solvable in polynomial time with the aid of a random number generator, allowing a small probability of error; this is the characterization of the complexity class BPP (bounded error probability probabilistic polynomial time), which is widely viewed as the class of efficiently solvable problems.
-
-Further work on this problem was stimulated by Bernstein and Vazirani [1993]. One of the results contained in their paper was an oracle problem (that is, a problem involving a ?black box? subroutine that the computer is allowed to perform but for which no code is accessible) which can be done in polynomial time on a quantum Turing machine but which requires superpolynomial time on a classical computer. This result was improved by Simon [1994], who gave a much simpler construction of an oracle problem which takes polynomial time on a quantum computer but requires exponential time on a classical computer. Indeed, while Bernstein and Vaziarni?s problem appears contrived, Simon?s problem looks quite natural. Simon?s algorithm inspired the work presented in this paper.
-\end{quote}
 
 % \begin{figure}[!ht] % Single column figure
 %   %\includegraphics[width=0.95\textwidth]{statistic_id267132_annual-amount-of-financial-damage-caused-by-reported-cybercrime-in-us-2001-2022.png}\hfill
