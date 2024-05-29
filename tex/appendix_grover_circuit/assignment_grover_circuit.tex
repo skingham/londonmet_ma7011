@@ -1,5 +1,13 @@
-    \hypertarget{grover-algorithm}{%
-\section{Appendix: Grover Algorithm}\label{grover-algorithm}}
+    \hypertarget{grovers-algorithm}{%
+\section{Grover's Algorithm}\label{grovers-algorithm}}
+
+Code is from IBM tutorial:
+https://learning.quantum.ibm.com/tutorial/grovers-algorithm
+
+\hypertarget{setup}{%
+\subsection{Setup}\label{setup}}
+
+On this run the backend was `ibm\_kyoto' which is a 27 qubit system.
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{1}{\boxspacing}
@@ -39,10 +47,20 @@
             \begin{tcolorbox}[breakable, size=fbox, boxrule=.5pt, pad at break*=1mm, opacityfill=0]
 \prompt{Out}{outcolor}{3}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-'ibm\_osaka'
+'ibm\_kyoto'
 \end{Verbatim}
 \end{tcolorbox}
         
+    \hypertarget{map-classical-inputs-to-a-quantum-problem}{%
+\subsection{Map classical inputs to a quantum
+problem}\label{map-classical-inputs-to-a-quantum-problem}}
+
+Grover's algorithm uses an oracle that marks computational basis states
+with a phase of -1.
+
+A controlled-Z gate marks the \(2^N − 1\) state (*NN bit-string). Here
+the \texttt{MCMT}gate is used to implement the multi-controlled Z-gate.
+
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{4}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -78,6 +96,12 @@
 \end{Verbatim}
 \end{tcolorbox}
 
+    Using the oracle function we can define a specific instance of Grover
+search.
+
+In this example we will mark two computational states out of the eight
+available in a three-qubit computational space:
+
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{5}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -92,15 +116,20 @@
 \prompt{Out}{outcolor}{5}{}
     
     \begin{center}
-    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_5_0.png}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_7_0.png}
     \end{center}
     { \hspace*{\fill} \\}
     
 
+    The built-in Qiskit \texttt{GroverOperator} takes an oracle circuit and
+returns a circuit that is composed of the oracle circuit itself and a
+circuit that amplifies the states marked by the oracle.
+
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{6}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-\PY{n}{oracle}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{n}{output}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{latex}\PY{l+s+s1}{\PYZsq{}}\PY{p}{,} \PY{n}{style}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{iqp}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}
+\PY{n}{grover\PYZus{}op} \PY{o}{=} \PY{n}{GroverOperator}\PY{p}{(}\PY{n}{oracle}\PY{p}{)}
+\PY{n}{grover\PYZus{}op}\PY{o}{.}\PY{n}{decompose}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{n}{output}\PY{o}{=}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{mpl}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{style}\PY{o}{=}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{iqp}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
  
@@ -108,8 +137,112 @@
 \prompt{Out}{outcolor}{6}{}
     
     \begin{center}
-    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_6_0.png}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_9_0.png}
     \end{center}
     { \hspace*{\fill} \\}
     
 
+    Repeated operations amplify the marked states:
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{7}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{optimal\PYZus{}num\PYZus{}iterations} \PY{o}{=} \PY{n}{math}\PY{o}{.}\PY{n}{floor}\PY{p}{(}
+    \PY{n}{math}\PY{o}{.}\PY{n}{pi} \PY{o}{/} \PY{p}{(}\PY{l+m+mi}{4} \PY{o}{*} \PY{n}{math}\PY{o}{.}\PY{n}{asin}\PY{p}{(}\PY{n}{math}\PY{o}{.}\PY{n}{sqrt}\PY{p}{(}\PY{n+nb}{len}\PY{p}{(}\PY{n}{marked\PYZus{}states}\PY{p}{)} \PY{o}{/} \PY{l+m+mi}{2}\PY{o}{*}\PY{o}{*}\PY{n}{grover\PYZus{}op}\PY{o}{.}\PY{n}{num\PYZus{}qubits}\PY{p}{)}\PY{p}{)}\PY{p}{)}
+\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \hypertarget{full-circuit}{%
+\subsubsection{Full circuit}\label{full-circuit}}
+
+We use the \texttt{qc.h()} function to put a Hadamard gate on each
+qubit, creating the even superposition of all computational basis
+states. The Grover operator is applied the optimal number of times using
+the \texttt{QuantumCircuit.power(...)} method.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{8}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{qc} \PY{o}{=} \PY{n}{QuantumCircuit}\PY{p}{(}\PY{n}{grover\PYZus{}op}\PY{o}{.}\PY{n}{num\PYZus{}qubits}\PY{p}{)}
+\PY{c+c1}{\PYZsh{} Create even superposition of all basis states}
+\PY{n}{qc}\PY{o}{.}\PY{n}{h}\PY{p}{(}\PY{n+nb}{range}\PY{p}{(}\PY{n}{grover\PYZus{}op}\PY{o}{.}\PY{n}{num\PYZus{}qubits}\PY{p}{)}\PY{p}{)}
+\PY{c+c1}{\PYZsh{} Apply Grover operator the optimal number of times}
+\PY{n}{qc}\PY{o}{.}\PY{n}{compose}\PY{p}{(}\PY{n}{grover\PYZus{}op}\PY{o}{.}\PY{n}{power}\PY{p}{(}\PY{n}{optimal\PYZus{}num\PYZus{}iterations}\PY{p}{)}\PY{p}{,} \PY{n}{inplace}\PY{o}{=}\PY{k+kc}{True}\PY{p}{)}
+\PY{c+c1}{\PYZsh{} Measure all qubits}
+\PY{n}{qc}\PY{o}{.}\PY{n}{measure\PYZus{}all}\PY{p}{(}\PY{p}{)}
+\PY{n}{qc}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{n}{output}\PY{o}{=}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{mpl}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{style}\PY{o}{=}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{iqp}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{8}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_13_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    \hypertarget{optimise-the-problem-for-quantum-execution}{%
+\subsection{Optimise the problem for quantum
+execution}\label{optimise-the-problem-for-quantum-execution}}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{9}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{transpiler}\PY{n+nn}{.}\PY{n+nn}{preset\PYZus{}passmanagers} \PY{k+kn}{import} \PY{n}{generate\PYZus{}preset\PYZus{}pass\PYZus{}manager}
+
+\PY{n}{target} \PY{o}{=} \PY{n}{backend}\PY{o}{.}\PY{n}{target}
+\PY{n}{pm} \PY{o}{=} \PY{n}{generate\PYZus{}preset\PYZus{}pass\PYZus{}manager}\PY{p}{(}\PY{n}{target}\PY{o}{=}\PY{n}{target}\PY{p}{,} \PY{n}{optimization\PYZus{}level}\PY{o}{=}\PY{l+m+mi}{3}\PY{p}{)}
+
+\PY{n}{circuit\PYZus{}isa} \PY{o}{=} \PY{n}{pm}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{n}{qc}\PY{p}{)}
+\PY{n}{circuit\PYZus{}isa}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{n}{output}\PY{o}{=}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{mpl}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{n}{idle\PYZus{}wires}\PY{o}{=}\PY{k+kc}{False}\PY{p}{,} \PY{n}{style}\PY{o}{=}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{iqp}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{9}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_15_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    \hypertarget{execute}{%
+\subsection{Execute}\label{execute}}
+
+Amplitude amplification is a sampling problem that is suitable for
+execution with the \texttt{Sampler} runtime primitive.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{10}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{c+c1}{\PYZsh{} To run on local simulator:}
+\PY{c+c1}{\PYZsh{}   1. Use the SatetvectorSampler from qiskit.primitives instead}
+\PY{n}{sampler} \PY{o}{=} \PY{n}{Sampler}\PY{p}{(}\PY{n}{backend}\PY{o}{=}\PY{n}{backend}\PY{p}{)}
+\PY{n}{sampler}\PY{o}{.}\PY{n}{options}\PY{o}{.}\PY{n}{default\PYZus{}shots} \PY{o}{=} \PY{l+m+mi}{10\PYZus{}000}
+\PY{n}{result} \PY{o}{=} \PY{n}{sampler}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{p}{[}\PY{n}{circuit\PYZus{}isa}\PY{p}{]}\PY{p}{)}\PY{o}{.}\PY{n}{result}\PY{p}{(}\PY{p}{)}
+\PY{n}{dist} \PY{o}{=} \PY{n}{result}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{.}\PY{n}{data}\PY{o}{.}\PY{n}{meas}\PY{o}{.}\PY{n}{get\PYZus{}counts}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+
+    \hypertarget{post-process}{%
+\subsection{Post process}\label{post-process}}
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{11}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{n}{plot\PYZus{}distribution}\PY{p}{(}\PY{n}{dist}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{11}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_19_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    

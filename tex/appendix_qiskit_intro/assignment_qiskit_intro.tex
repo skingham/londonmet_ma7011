@@ -1,201 +1,160 @@
-    \hypertarget{example-qiskit-code}{%
-\section{Appendix B: Example QISKIT code}\label{example-qiskit-code}}
+    \hypertarget{qiskit-introduction}{%
+\section{QISKIT Introduction}\label{qiskit-introduction}}
+
+Here are some sample pieces of code to demonstrate building and running
+circuits.
+
+All circuits will be run on simulators working on the
+
+    \hypertarget{quantum-fourier-transform-by-hand}{%
+\subsection{Quantum Fourier Transform by
+Hand}\label{quantum-fourier-transform-by-hand}}
+
+Start with a \texttt{QuantumCircuit} object for a 3-qubit system and
+build up a QFT using individual gates.
+
+N.B. Qiskit's least significant bit has the lowest index.
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{1}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}ibm\PYZus{}runtime} \PY{k+kn}{import} \PY{n}{QiskitRuntimeService}
+\PY{k+kn}{from} \PY{n+nn}{qiskit} \PY{k+kn}{import} \PY{n}{QuantumCircuit}
+\PY{k+kn}{import} \PY{n+nn}{numpy} \PY{k}{as} \PY{n+nn}{np}
+\PY{n}{pi} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{pi}
 
-\PY{c+c1}{\PYZsh{} Save an IBM Quantum account and set it as your default account.}
-\PY{c+c1}{\PYZsh{} api\PYZus{}token = \PYZdq{}41636b2275416ee2ac6f950b711a8e1417d346c976243d801919532851cc25e7802f010f5d54fc039c891c944407bc3e08d541bcac8af22372eb6e501291fcb2\PYZdq{}}
-\PY{c+c1}{\PYZsh{} service = QiskitRuntimeService(channel=\PYZdq{}ibm\PYZus{}quantum\PYZdq{}, token=api\PYZus{}token)}
-\PY{c+c1}{\PYZsh{} QiskitRuntimeService.save\PYZus{}account(channel=\PYZdq{}ibm\PYZus{}quantum\PYZdq{}, token=api\PYZus{}token, set\PYZus{}as\PYZus{}default=True)}
-
-\PY{c+c1}{\PYZsh{} Load saved credentials}
-\PY{n}{service} \PY{o}{=} \PY{n}{QiskitRuntimeService}\PY{p}{(}\PY{p}{)}
+\PY{n}{qft\PYZus{}c} \PY{o}{=} \PY{n}{QuantumCircuit}\PY{p}{(}\PY{l+m+mi}{3}\PY{p}{)}
+\PY{c+c1}{\PYZsh{} Hadamard gate is constructed with the \PYZsq{}QuantumCircuit.h\PYZsq{} method}
+\PY{n}{qft\PYZus{}c}\PY{o}{.}\PY{n}{h}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}
+\PY{c+c1}{\PYZsh{} CROT from qubit 1 to qubit 2}
+\PY{n}{qft\PYZus{}c}\PY{o}{.}\PY{n}{cp}\PY{p}{(}\PY{n}{pi}\PY{o}{/}\PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
+\PY{c+c1}{\PYZsh{} CROT from qubit 2 to qubit 0}
+\PY{n}{qft\PYZus{}c}\PY{o}{.}\PY{n}{cp}\PY{p}{(}\PY{n}{pi}\PY{o}{/}\PY{l+m+mi}{4}\PY{p}{,} \PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)} 
+\PY{n}{qft\PYZus{}c}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{1}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_2_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
 
-    \hypertarget{migrate-to-local-simulators}{%
-\subsection{Migrate to local
-simulators}\label{migrate-to-local-simulators}}
+    \hypertarget{inverse-qft}{%
+\subsection{Inverse QFT}\label{inverse-qft}}
 
-\href{https://docs.quantum.ibm.com/api/migration-guides/local-simulators}{IBM
-Migration Guides: Local simulators}
+Instead of building all the H, CROT and SWAP gates by hand, we can use a
+prebuild QFT class which has this already.
 
-\hypertarget{fake-backends}{%
-\subsubsection{Fake backends}\label{fake-backends}}
+We will use this to build an inverse transform
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{2}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{circuit}\PY{n+nn}{.}\PY{n+nn}{library} \PY{k+kn}{import} \PY{n}{RealAmplitudes}
-\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{circuit} \PY{k+kn}{import} \PY{n}{QuantumCircuit}\PY{p}{,} \PY{n}{QuantumRegister}\PY{p}{,} \PY{n}{ClassicalRegister}
-\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{quantum\PYZus{}info} \PY{k+kn}{import} \PY{n}{SparsePauliOp}
-\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{transpiler}\PY{n+nn}{.}\PY{n+nn}{preset\PYZus{}passmanagers} \PY{k+kn}{import} \PY{n}{generate\PYZus{}preset\PYZus{}pass\PYZus{}manager}
-\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}ibm\PYZus{}runtime} \PY{k+kn}{import} \PY{n}{SamplerV2} \PY{k}{as} \PY{n}{Sampler}
-\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}ibm\PYZus{}runtime}\PY{n+nn}{.}\PY{n+nn}{fake\PYZus{}provider} \PY{k+kn}{import} \PY{n}{FakeManilaV2}
- 
-\PY{c+c1}{\PYZsh{} Bell Circuit}
-\PY{n}{qc} \PY{o}{=} \PY{n}{QuantumCircuit}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}
-\PY{n}{qc}\PY{o}{.}\PY{n}{h}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{)}
-\PY{n}{qc}\PY{o}{.}\PY{n}{cx}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}
-\PY{n}{qc}\PY{o}{.}\PY{n}{measure\PYZus{}all}\PY{p}{(}\PY{p}{)}
- 
-\PY{c+c1}{\PYZsh{} Run the sampler job locally using FakeManilaV2}
-\PY{n}{fake\PYZus{}manila} \PY{o}{=} \PY{n}{FakeManilaV2}\PY{p}{(}\PY{p}{)}
-\PY{n}{pm} \PY{o}{=} \PY{n}{generate\PYZus{}preset\PYZus{}pass\PYZus{}manager}\PY{p}{(}\PY{n}{backend}\PY{o}{=}\PY{n}{fake\PYZus{}manila}\PY{p}{,} \PY{n}{optimization\PYZus{}level}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{)}
-\PY{n}{isa\PYZus{}qc} \PY{o}{=} \PY{n}{pm}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{n}{qc}\PY{p}{)}
- 
-\PY{c+c1}{\PYZsh{} You can use a fixed seed to get fixed results. }
-\PY{n}{options} \PY{o}{=} \PY{p}{\PYZob{}}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{simulator}\PY{l+s+s2}{\PYZdq{}}\PY{p}{:} \PY{p}{\PYZob{}}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{seed\PYZus{}simulator}\PY{l+s+s2}{\PYZdq{}}\PY{p}{:} \PY{l+m+mi}{42}\PY{p}{\PYZcb{}}\PY{p}{\PYZcb{}}
-\PY{n}{sampler} \PY{o}{=} \PY{n}{Sampler}\PY{p}{(}\PY{n}{backend}\PY{o}{=}\PY{n}{fake\PYZus{}manila}\PY{p}{,} \PY{n}{options}\PY{o}{=}\PY{n}{options}\PY{p}{)}
- 
-\PY{n}{result} \PY{o}{=} \PY{n}{sampler}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{p}{[}\PY{n}{isa\PYZus{}qc}\PY{p}{]}\PY{p}{)}\PY{o}{.}\PY{n}{result}\PY{p}{(}\PY{p}{)}
+\PY{k+kn}{from} \PY{n+nn}{qiskit} \PY{k+kn}{import} \PY{n}{QuantumCircuit}
+
+\PY{n}{nqubits} \PY{o}{=} \PY{l+m+mi}{3}
+\PY{n}{number} \PY{o}{=} \PY{l+m+mi}{5}
+
+\PY{n}{circuit} \PY{o}{=} \PY{n}{QuantumCircuit}\PY{p}{(}\PY{n}{nqubits}\PY{p}{)}
+\PY{k}{for} \PY{n}{qubit} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{nqubits}\PY{p}{)}\PY{p}{:}
+    \PY{n}{circuit}\PY{o}{.}\PY{n}{h}\PY{p}{(}\PY{n}{qubit}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{p}\PY{p}{(}\PY{n}{number}\PY{o}{*}\PY{n}{pi}\PY{o}{/}\PY{l+m+mi}{4}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{p}\PY{p}{(}\PY{n}{number}\PY{o}{*}\PY{n}{pi}\PY{o}{/}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{1}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{p}\PY{p}{(}\PY{n}{number}\PY{o}{*}\PY{n}{pi}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{2}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_4_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
 
-    \hypertarget{aersimulator}{%
-\subsubsection{AerSimulator}\label{aersimulator}}
+    We have Fourier state \(|\tilde{5} \rangle\)
+
+We can create state vector diagrams:
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{3}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
 \PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}aer} \PY{k+kn}{import} \PY{n}{AerSimulator}
-\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{circuit}\PY{n+nn}{.}\PY{n+nn}{library} \PY{k+kn}{import} \PY{n}{RealAmplitudes}
-\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{circuit} \PY{k+kn}{import} \PY{n}{QuantumCircuit}\PY{p}{,} \PY{n}{QuantumRegister}\PY{p}{,} \PY{n}{ClassicalRegister}
-\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{quantum\PYZus{}info} \PY{k+kn}{import} \PY{n}{SparsePauliOp}
-\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{transpiler}\PY{n+nn}{.}\PY{n+nn}{preset\PYZus{}passmanagers} \PY{k+kn}{import} \PY{n}{generate\PYZus{}preset\PYZus{}pass\PYZus{}manager}
-\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}ibm\PYZus{}runtime} \PY{k+kn}{import} \PY{n}{Session}\PY{p}{,} \PY{n}{SamplerV2} \PY{k}{as} \PY{n}{Sampler}
- 
-\PY{c+c1}{\PYZsh{} Bell Circuit}
-\PY{n}{qc} \PY{o}{=} \PY{n}{QuantumCircuit}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}
-\PY{n}{qc}\PY{o}{.}\PY{n}{h}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{)}
-\PY{n}{qc}\PY{o}{.}\PY{n}{cx}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}
-\PY{n}{qc}\PY{o}{.}\PY{n}{measure\PYZus{}all}\PY{p}{(}\PY{p}{)}
- 
-\PY{c+c1}{\PYZsh{} Run the sampler job locally using AerSimulator.}
-\PY{c+c1}{\PYZsh{} Session syntax is supported but ignored because local mode doesn\PYZsq{}t support sessions.}
-\PY{n}{aer\PYZus{}sim} \PY{o}{=} \PY{n}{AerSimulator}\PY{p}{(}\PY{p}{)}
-\PY{n}{pm} \PY{o}{=} \PY{n}{generate\PYZus{}preset\PYZus{}pass\PYZus{}manager}\PY{p}{(}\PY{n}{backend}\PY{o}{=}\PY{n}{aer\PYZus{}sim}\PY{p}{,} \PY{n}{optimization\PYZus{}level}\PY{o}{=}\PY{l+m+mi}{1}\PY{p}{)}
-\PY{n}{isa\PYZus{}qc} \PY{o}{=} \PY{n}{pm}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{n}{qc}\PY{p}{)}
-\PY{k}{with} \PY{n}{Session}\PY{p}{(}\PY{n}{backend}\PY{o}{=}\PY{n}{aer\PYZus{}sim}\PY{p}{)} \PY{k}{as} \PY{n}{session}\PY{p}{:}
-    \PY{n}{sampler} \PY{o}{=} \PY{n}{Sampler}\PY{p}{(}\PY{n}{session}\PY{o}{=}\PY{n}{session}\PY{p}{)}
-    \PY{n}{result} \PY{o}{=} \PY{n}{sampler}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{p}{[}\PY{n}{isa\PYZus{}qc}\PY{p}{]}\PY{p}{)}\PY{o}{.}\PY{n}{result}\PY{p}{(}\PY{p}{)}
+\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{visualization} \PY{k+kn}{import} \PY{n}{plot\PYZus{}bloch\PYZus{}multivector}
+
+\PY{n}{qc\PYZus{}init} \PY{o}{=} \PY{n}{circuit}\PY{o}{.}\PY{n}{copy}\PY{p}{(}\PY{p}{)}
+\PY{n}{qc\PYZus{}init}\PY{o}{.}\PY{n}{save\PYZus{}statevector}\PY{p}{(}\PY{p}{)}
+\PY{n}{sim} \PY{o}{=} \PY{n}{AerSimulator}\PY{p}{(}\PY{p}{)}
+\PY{n}{statevector} \PY{o}{=} \PY{n}{sim}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{n}{qc\PYZus{}init}\PY{p}{)}\PY{o}{.}\PY{n}{result}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{get\PYZus{}statevector}\PY{p}{(}\PY{p}{)}
+\PY{n}{plot\PYZus{}bloch\PYZus{}multivector}\PY{p}{(}\PY{n}{statevector}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{3}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_6_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
 
-    \begin{Verbatim}[commandchars=\\\{\}]
-/Users/skingham/Library/Anaconda/envs/py312\_qiskit/lib/python3.12/site-
-packages/qiskit\_ibm\_runtime/session.py:157: UserWarning: Session is not
-supported in local testing mode or when using a simulator.
-  warnings.warn(
-    \end{Verbatim}
+    Build the inverse QFT and append it to the circuit.
+
+Also measure all qubit.
 
     \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
 \prompt{In}{incolor}{4}{\boxspacing}
 \begin{Verbatim}[commandchars=\\\{\}]
-\PY{k+kn}{from} \PY{n+nn}{qiskit} \PY{k+kn}{import} \PY{n}{transpile}
-\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{circuit}\PY{n+nn}{.}\PY{n+nn}{library} \PY{k+kn}{import} \PY{n}{RealAmplitudes}
-\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{quantum\PYZus{}info} \PY{k+kn}{import} \PY{n}{SparsePauliOp}
-\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}aer} \PY{k+kn}{import} \PY{n}{AerSimulator}
+\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{circuit}\PY{n+nn}{.}\PY{n+nn}{library} \PY{k+kn}{import} \PY{n}{QFT}
 
-\PY{n}{sim} \PY{o}{=} \PY{n}{AerSimulator}\PY{p}{(}\PY{p}{)}
-\PY{c+c1}{\PYZsh{} \PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}}
-\PY{c+c1}{\PYZsh{} Simulating using estimator}
-\PY{c+c1}{\PYZsh{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}}
-\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}aer}\PY{n+nn}{.}\PY{n+nn}{primitives} \PY{k+kn}{import} \PY{n}{EstimatorV2}
-
-\PY{n}{psi1} \PY{o}{=} \PY{n}{transpile}\PY{p}{(}\PY{n}{RealAmplitudes}\PY{p}{(}\PY{n}{num\PYZus{}qubits}\PY{o}{=}\PY{l+m+mi}{2}\PY{p}{,} \PY{n}{reps}\PY{o}{=}\PY{l+m+mi}{2}\PY{p}{)}\PY{p}{,} \PY{n}{sim}\PY{p}{,} \PY{n}{optimization\PYZus{}level}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{)}
-\PY{n}{psi2} \PY{o}{=} \PY{n}{transpile}\PY{p}{(}\PY{n}{RealAmplitudes}\PY{p}{(}\PY{n}{num\PYZus{}qubits}\PY{o}{=}\PY{l+m+mi}{2}\PY{p}{,} \PY{n}{reps}\PY{o}{=}\PY{l+m+mi}{3}\PY{p}{)}\PY{p}{,} \PY{n}{sim}\PY{p}{,} \PY{n}{optimization\PYZus{}level}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{)}
-
-\PY{n}{H1} \PY{o}{=} \PY{n}{SparsePauliOp}\PY{o}{.}\PY{n}{from\PYZus{}list}\PY{p}{(}\PY{p}{[}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{II}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{,} \PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{IZ}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}\PY{p}{,} \PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{XI}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{l+m+mi}{3}\PY{p}{)}\PY{p}{]}\PY{p}{)}
-\PY{n}{H2} \PY{o}{=} \PY{n}{SparsePauliOp}\PY{o}{.}\PY{n}{from\PYZus{}list}\PY{p}{(}\PY{p}{[}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{IZ}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{]}\PY{p}{)}
-\PY{n}{H3} \PY{o}{=} \PY{n}{SparsePauliOp}\PY{o}{.}\PY{n}{from\PYZus{}list}\PY{p}{(}\PY{p}{[}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{ZI}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{,} \PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{ZZ}\PY{l+s+s2}{\PYZdq{}}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}\PY{p}{]}\PY{p}{)}
-
-\PY{n}{theta1} \PY{o}{=} \PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{3}\PY{p}{,} \PY{l+m+mi}{5}\PY{p}{]}
-\PY{n}{theta2} \PY{o}{=} \PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{3}\PY{p}{,} \PY{l+m+mi}{5}\PY{p}{,} \PY{l+m+mi}{8}\PY{p}{,} \PY{l+m+mi}{13}\PY{p}{]}
-\PY{n}{theta3} \PY{o}{=} \PY{p}{[}\PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{3}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{,} \PY{l+m+mi}{5}\PY{p}{,} \PY{l+m+mi}{6}\PY{p}{]}
-
-\PY{n}{estimator} \PY{o}{=} \PY{n}{EstimatorV2}\PY{p}{(}\PY{p}{)}
-
-\PY{c+c1}{\PYZsh{} calculate [ [\PYZlt{}psi1(theta1)|H1|psi1(theta1)\PYZgt{},}
-\PY{c+c1}{\PYZsh{}              \PYZlt{}psi1(theta3)|H3|psi1(theta3)\PYZgt{}],}
-\PY{c+c1}{\PYZsh{}             [\PYZlt{}psi2(theta2)|H2|psi2(theta2)\PYZgt{}] ]}
-\PY{n}{job} \PY{o}{=} \PY{n}{estimator}\PY{o}{.}\PY{n}{run}\PY{p}{(}
-    \PY{p}{[}
-        \PY{p}{(}\PY{n}{psi1}\PY{p}{,} \PY{p}{[}\PY{n}{H1}\PY{p}{,} \PY{n}{H3}\PY{p}{]}\PY{p}{,} \PY{p}{[}\PY{n}{theta1}\PY{p}{,} \PY{n}{theta3}\PY{p}{]}\PY{p}{)}\PY{p}{,}
-        \PY{p}{(}\PY{n}{psi2}\PY{p}{,} \PY{n}{H2}\PY{p}{,} \PY{n}{theta2}\PY{p}{)}
-    \PY{p}{]}\PY{p}{,}
-    \PY{n}{precision}\PY{o}{=}\PY{l+m+mf}{0.01}
-\PY{p}{)}
-\PY{n}{result} \PY{o}{=} \PY{n}{job}\PY{o}{.}\PY{n}{result}\PY{p}{(}\PY{p}{)}
-\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{expectation values : psi1 = }\PY{l+s+si}{\PYZob{}}\PY{n}{result}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{.}\PY{n}{data}\PY{o}{.}\PY{n}{evs}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s2}{, psi2 = }\PY{l+s+si}{\PYZob{}}\PY{n}{result}\PY{p}{[}\PY{l+m+mi}{1}\PY{p}{]}\PY{o}{.}\PY{n}{data}\PY{o}{.}\PY{n}{evs}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
-
-\PY{c+c1}{\PYZsh{} \PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}}
-\PY{c+c1}{\PYZsh{} Simulating using sampler}
-\PY{c+c1}{\PYZsh{} \PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}}
-\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}aer}\PY{n+nn}{.}\PY{n+nn}{primitives} \PY{k+kn}{import} \PY{n}{SamplerV2}
-\PY{k+kn}{from} \PY{n+nn}{qiskit} \PY{k+kn}{import} \PY{n}{QuantumCircuit}
-
-\PY{c+c1}{\PYZsh{} create a Bell circuit}
-\PY{n}{bell} \PY{o}{=} \PY{n}{QuantumCircuit}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}
-\PY{n}{bell}\PY{o}{.}\PY{n}{h}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{)}
-\PY{n}{bell}\PY{o}{.}\PY{n}{cx}\PY{p}{(}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{)}
-\PY{n}{bell}\PY{o}{.}\PY{n}{measure\PYZus{}all}\PY{p}{(}\PY{p}{)}
-
-\PY{c+c1}{\PYZsh{} create two parameterized circuits}
-\PY{n}{pqc} \PY{o}{=} \PY{n}{RealAmplitudes}\PY{p}{(}\PY{n}{num\PYZus{}qubits}\PY{o}{=}\PY{l+m+mi}{2}\PY{p}{,} \PY{n}{reps}\PY{o}{=}\PY{l+m+mi}{2}\PY{p}{)}
-\PY{n}{pqc}\PY{o}{.}\PY{n}{measure\PYZus{}all}\PY{p}{(}\PY{p}{)}
-\PY{n}{pqc} \PY{o}{=} \PY{n}{transpile}\PY{p}{(}\PY{n}{pqc}\PY{p}{,} \PY{n}{sim}\PY{p}{,} \PY{n}{optimization\PYZus{}level}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{)}
-\PY{n}{pqc2} \PY{o}{=} \PY{n}{RealAmplitudes}\PY{p}{(}\PY{n}{num\PYZus{}qubits}\PY{o}{=}\PY{l+m+mi}{2}\PY{p}{,} \PY{n}{reps}\PY{o}{=}\PY{l+m+mi}{3}\PY{p}{)}
-\PY{n}{pqc2}\PY{o}{.}\PY{n}{measure\PYZus{}all}\PY{p}{(}\PY{p}{)}
-\PY{n}{pqc2} \PY{o}{=} \PY{n}{transpile}\PY{p}{(}\PY{n}{pqc2}\PY{p}{,} \PY{n}{sim}\PY{p}{,} \PY{n}{optimization\PYZus{}level}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{)}
-
-\PY{n}{theta1} \PY{o}{=} \PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{3}\PY{p}{,} \PY{l+m+mi}{5}\PY{p}{]}
-\PY{n}{theta2} \PY{o}{=} \PY{p}{[}\PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{3}\PY{p}{,} \PY{l+m+mi}{4}\PY{p}{,} \PY{l+m+mi}{5}\PY{p}{,} \PY{l+m+mi}{6}\PY{p}{,} \PY{l+m+mi}{7}\PY{p}{]}
-
-\PY{c+c1}{\PYZsh{} initialization of the sampler}
-\PY{n}{sampler} \PY{o}{=} \PY{n}{SamplerV2}\PY{p}{(}\PY{p}{)}
-
-\PY{c+c1}{\PYZsh{} collect 128 shots from the Bell circuit}
-\PY{n}{job} \PY{o}{=} \PY{n}{sampler}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{p}{[}\PY{n}{bell}\PY{p}{]}\PY{p}{,} \PY{n}{shots}\PY{o}{=}\PY{l+m+mi}{128}\PY{p}{)}
-\PY{n}{job\PYZus{}result} \PY{o}{=} \PY{n}{job}\PY{o}{.}\PY{n}{result}\PY{p}{(}\PY{p}{)}
-\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{counts for Bell circuit : }\PY{l+s+si}{\PYZob{}}\PY{n}{job\PYZus{}result}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{.}\PY{n}{data}\PY{o}{.}\PY{n}{meas}\PY{o}{.}\PY{n}{get\PYZus{}counts}\PY{p}{(}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
- 
-\PY{c+c1}{\PYZsh{} run a sampler job on the parameterized circuits}
-\PY{n}{job2} \PY{o}{=} \PY{n}{sampler}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{p}{[}\PY{p}{(}\PY{n}{pqc}\PY{p}{,} \PY{n}{theta1}\PY{p}{)}\PY{p}{,} \PY{p}{(}\PY{n}{pqc2}\PY{p}{,} \PY{n}{theta2}\PY{p}{)}\PY{p}{]}\PY{p}{)}
-\PY{n}{job\PYZus{}result} \PY{o}{=} \PY{n}{job2}\PY{o}{.}\PY{n}{result}\PY{p}{(}\PY{p}{)}
-\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{counts for parameterized circuit : }\PY{l+s+si}{\PYZob{}}\PY{n}{job\PYZus{}result}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{.}\PY{n}{data}\PY{o}{.}\PY{n}{meas}\PY{o}{.}\PY{n}{get\PYZus{}counts}\PY{p}{(}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
-
-\PY{c+c1}{\PYZsh{} \PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}}
-\PY{c+c1}{\PYZsh{} Simulating with noise model from actual hardware}
-\PY{c+c1}{\PYZsh{} \PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}\PYZhy{}}
-\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}ibm\PYZus{}runtime} \PY{k+kn}{import} \PY{n}{QiskitRuntimeService}
-\PY{n}{provider} \PY{o}{=} \PY{n}{QiskitRuntimeService}\PY{p}{(}\PY{p}{)} \PY{c+c1}{\PYZsh{}channel=\PYZsq{}ibm\PYZus{}quantum\PYZsq{}, token=\PYZdq{}set your own token here\PYZdq{})}
-\PY{n}{backend} \PY{o}{=} \PY{n}{provider}\PY{o}{.}\PY{n}{get\PYZus{}backend}\PY{p}{(}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{ibm\PYZus{}kyoto}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
-
-\PY{c+c1}{\PYZsh{} create sampler from the actual backend}
-\PY{n}{sampler}\PY{o}{.}\PY{n}{from\PYZus{}backend}\PY{p}{(}\PY{n}{backend}\PY{p}{)}
-
-\PY{c+c1}{\PYZsh{} run a sampler job on the parameterized circuits with noise model of the actual hardware}
-\PY{n}{job3} \PY{o}{=} \PY{n}{sampler}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{p}{[}\PY{p}{(}\PY{n}{pqc}\PY{p}{,} \PY{n}{theta1}\PY{p}{)}\PY{p}{,} \PY{p}{(}\PY{n}{pqc2}\PY{p}{,} \PY{n}{theta2}\PY{p}{)}\PY{p}{]}\PY{p}{)}
-\PY{n}{job\PYZus{}result} \PY{o}{=} \PY{n}{job3}\PY{o}{.}\PY{n}{result}\PY{p}{(}\PY{p}{)}
-\PY{n+nb}{print}\PY{p}{(}\PY{l+s+sa}{f}\PY{l+s+s2}{\PYZdq{}}\PY{l+s+s2}{Parameterized for Bell circuit w/noise: }\PY{l+s+si}{\PYZob{}}\PY{n}{job\PYZus{}result}\PY{p}{[}\PY{l+m+mi}{0}\PY{p}{]}\PY{o}{.}\PY{n}{data}\PY{o}{.}\PY{n}{meas}\PY{o}{.}\PY{n}{get\PYZus{}counts}\PY{p}{(}\PY{p}{)}\PY{l+s+si}{\PYZcb{}}\PY{l+s+s2}{\PYZdq{}}\PY{p}{)}
+\PY{n}{qft} \PY{o}{=} \PY{n}{QFT}\PY{p}{(}\PY{n}{num\PYZus{}qubits}\PY{o}{=}\PY{l+m+mi}{3}\PY{p}{,} \PY{n}{approximation\PYZus{}degree}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{do\PYZus{}swaps}\PY{o}{=}\PY{k+kc}{True}\PY{p}{,} \PY{n}{inverse}\PY{o}{=}\PY{k+kc}{True}\PY{p}{,} \PY{n}{insert\PYZus{}barriers}\PY{o}{=}\PY{k+kc}{False}\PY{p}{,} \PY{n}{name}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{qft}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{o}{.}\PY{n}{to\PYZus{}gate}\PY{p}{(}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{qft}\PY{p}{,} \PY{n}{circuit}\PY{o}{.}\PY{n}{qubits}\PY{p}{[}\PY{p}{:}\PY{n}{nqubits}\PY{p}{]}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{measure\PYZus{}all}\PY{p}{(}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{decompose}\PY{p}{(}\PY{n}{reps}\PY{o}{=}\PY{l+m+mi}{2}\PY{p}{)}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{p}{)}
 \end{Verbatim}
 \end{tcolorbox}
-
-    \begin{Verbatim}[commandchars=\\\{\}]
-expectation values : psi1 = [ 1.5557232  -1.09625114], psi2 =
-0.16332666909040922
-counts for Bell circuit : \{'00': 71, '11': 57\}
-counts for parameterized circuit : \{'01': 379, '00': 128, '10': 95, '11': 422\}
-Parameterized for Bell circuit w/noise: \{'10': 103, '11': 423, '00': 107, '01':
-391\}
-    \end{Verbatim}
-
-
-    % Add a bibliography block to the postdoc
+ 
+            
+\prompt{Out}{outcolor}{4}{}
     
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_8_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
     
-     
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{5}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{k+kn}{from} \PY{n+nn}{qiskit} \PY{k+kn}{import} \PY{n}{transpile}
+\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{visualization} \PY{k+kn}{import} \PY{n}{plot\PYZus{}histogram}
+\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}ibm\PYZus{}runtime}\PY{n+nn}{.}\PY{n+nn}{fake\PYZus{}provider} \PY{k+kn}{import} \PY{n}{FakeManilaV2}
+
+\PY{c+c1}{\PYZsh{} A fake 5 qubit backend.}
+\PY{n}{backend} \PY{o}{=} \PY{n}{FakeManilaV2}\PY{p}{(}\PY{p}{)}
+\PY{n}{shots} \PY{o}{=} \PY{l+m+mi}{2048}
+\PY{n}{transpiled\PYZus{}qc} \PY{o}{=} \PY{n}{transpile}\PY{p}{(}\PY{n}{circuit}\PY{p}{,} \PY{n}{backend}\PY{p}{,} \PY{n}{optimization\PYZus{}level}\PY{o}{=}\PY{l+m+mi}{3}\PY{p}{)}
+
+\PY{n}{job} \PY{o}{=} \PY{n}{backend}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{n}{transpiled\PYZus{}qc}\PY{p}{,} \PY{n}{shots}\PY{o}{=}\PY{n}{shots}\PY{p}{)}
+
+\PY{n}{counts} \PY{o}{=} \PY{n}{job}\PY{o}{.}\PY{n}{result}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{get\PYZus{}counts}\PY{p}{(}\PY{p}{)}
+\PY{n}{plot\PYZus{}histogram}\PY{p}{(}\PY{n}{counts}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{5}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_9_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    And we recover 5 as 101!
