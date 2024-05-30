@@ -1,0 +1,160 @@
+    \hypertarget{qiskit-introduction}{%
+\section{QISKIT Introduction}\label{qiskit-introduction}}
+
+Here are some sample pieces of code to demonstrate building and running
+circuits.
+
+All circuits will be run on simulators working on the
+
+    \hypertarget{quantum-fourier-transform-by-hand}{%
+\subsection{Quantum Fourier Transform by
+Hand}\label{quantum-fourier-transform-by-hand}}
+
+Start with a \texttt{QuantumCircuit} object for a 3-qubit system and
+build up a QFT using individual gates.
+
+N.B. Qiskit's least significant bit has the lowest index.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{1}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{k+kn}{from} \PY{n+nn}{qiskit} \PY{k+kn}{import} \PY{n}{QuantumCircuit}
+\PY{k+kn}{import} \PY{n+nn}{numpy} \PY{k}{as} \PY{n+nn}{np}
+\PY{n}{pi} \PY{o}{=} \PY{n}{np}\PY{o}{.}\PY{n}{pi}
+
+\PY{n}{qft\PYZus{}c} \PY{o}{=} \PY{n}{QuantumCircuit}\PY{p}{(}\PY{l+m+mi}{3}\PY{p}{)}
+\PY{c+c1}{\PYZsh{} Hadamard gate is constructed with the \PYZsq{}QuantumCircuit.h\PYZsq{} method}
+\PY{n}{qft\PYZus{}c}\PY{o}{.}\PY{n}{h}\PY{p}{(}\PY{l+m+mi}{2}\PY{p}{)}
+\PY{c+c1}{\PYZsh{} CROT from qubit 1 to qubit 2}
+\PY{n}{qft\PYZus{}c}\PY{o}{.}\PY{n}{cp}\PY{p}{(}\PY{n}{pi}\PY{o}{/}\PY{l+m+mi}{2}\PY{p}{,} \PY{l+m+mi}{1}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)}
+\PY{c+c1}{\PYZsh{} CROT from qubit 2 to qubit 0}
+\PY{n}{qft\PYZus{}c}\PY{o}{.}\PY{n}{cp}\PY{p}{(}\PY{n}{pi}\PY{o}{/}\PY{l+m+mi}{4}\PY{p}{,} \PY{l+m+mi}{0}\PY{p}{,} \PY{l+m+mi}{2}\PY{p}{)} 
+\PY{n}{qft\PYZus{}c}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{1}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_2_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    \hypertarget{inverse-qft}{%
+\subsection{Inverse QFT}\label{inverse-qft}}
+
+Instead of building all the H, CROT and SWAP gates by hand, we can use a
+prebuild QFT class which has this already.
+
+We will use this to build an inverse transform
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{2}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{k+kn}{from} \PY{n+nn}{qiskit} \PY{k+kn}{import} \PY{n}{QuantumCircuit}
+
+\PY{n}{nqubits} \PY{o}{=} \PY{l+m+mi}{3}
+\PY{n}{number} \PY{o}{=} \PY{l+m+mi}{5}
+
+\PY{n}{circuit} \PY{o}{=} \PY{n}{QuantumCircuit}\PY{p}{(}\PY{n}{nqubits}\PY{p}{)}
+\PY{k}{for} \PY{n}{qubit} \PY{o+ow}{in} \PY{n+nb}{range}\PY{p}{(}\PY{n}{nqubits}\PY{p}{)}\PY{p}{:}
+    \PY{n}{circuit}\PY{o}{.}\PY{n}{h}\PY{p}{(}\PY{n}{qubit}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{p}\PY{p}{(}\PY{n}{number}\PY{o}{*}\PY{n}{pi}\PY{o}{/}\PY{l+m+mi}{4}\PY{p}{,}\PY{l+m+mi}{0}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{p}\PY{p}{(}\PY{n}{number}\PY{o}{*}\PY{n}{pi}\PY{o}{/}\PY{l+m+mi}{2}\PY{p}{,}\PY{l+m+mi}{1}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{p}\PY{p}{(}\PY{n}{number}\PY{o}{*}\PY{n}{pi}\PY{p}{,}\PY{l+m+mi}{2}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{2}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_4_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    We have Fourier state \(|\tilde{5} \rangle\)
+
+We can create state vector diagrams:
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{3}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}aer} \PY{k+kn}{import} \PY{n}{AerSimulator}
+\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{visualization} \PY{k+kn}{import} \PY{n}{plot\PYZus{}bloch\PYZus{}multivector}
+
+\PY{n}{qc\PYZus{}init} \PY{o}{=} \PY{n}{circuit}\PY{o}{.}\PY{n}{copy}\PY{p}{(}\PY{p}{)}
+\PY{n}{qc\PYZus{}init}\PY{o}{.}\PY{n}{save\PYZus{}statevector}\PY{p}{(}\PY{p}{)}
+\PY{n}{sim} \PY{o}{=} \PY{n}{AerSimulator}\PY{p}{(}\PY{p}{)}
+\PY{n}{statevector} \PY{o}{=} \PY{n}{sim}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{n}{qc\PYZus{}init}\PY{p}{)}\PY{o}{.}\PY{n}{result}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{get\PYZus{}statevector}\PY{p}{(}\PY{p}{)}
+\PY{n}{plot\PYZus{}bloch\PYZus{}multivector}\PY{p}{(}\PY{n}{statevector}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{3}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_6_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    Build the inverse QFT and append it to the circuit.
+
+Also measure all qubit.
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{4}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{circuit}\PY{n+nn}{.}\PY{n+nn}{library} \PY{k+kn}{import} \PY{n}{QFT}
+
+\PY{n}{qft} \PY{o}{=} \PY{n}{QFT}\PY{p}{(}\PY{n}{num\PYZus{}qubits}\PY{o}{=}\PY{l+m+mi}{3}\PY{p}{,} \PY{n}{approximation\PYZus{}degree}\PY{o}{=}\PY{l+m+mi}{0}\PY{p}{,} \PY{n}{do\PYZus{}swaps}\PY{o}{=}\PY{k+kc}{True}\PY{p}{,} \PY{n}{inverse}\PY{o}{=}\PY{k+kc}{True}\PY{p}{,} \PY{n}{insert\PYZus{}barriers}\PY{o}{=}\PY{k+kc}{False}\PY{p}{,} \PY{n}{name}\PY{o}{=}\PY{l+s+s1}{\PYZsq{}}\PY{l+s+s1}{qft}\PY{l+s+s1}{\PYZsq{}}\PY{p}{)}\PY{o}{.}\PY{n}{to\PYZus{}gate}\PY{p}{(}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{append}\PY{p}{(}\PY{n}{qft}\PY{p}{,} \PY{n}{circuit}\PY{o}{.}\PY{n}{qubits}\PY{p}{[}\PY{p}{:}\PY{n}{nqubits}\PY{p}{]}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{measure\PYZus{}all}\PY{p}{(}\PY{p}{)}
+\PY{n}{circuit}\PY{o}{.}\PY{n}{decompose}\PY{p}{(}\PY{n}{reps}\PY{o}{=}\PY{l+m+mi}{2}\PY{p}{)}\PY{o}{.}\PY{n}{draw}\PY{p}{(}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{4}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_8_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    \begin{tcolorbox}[breakable, size=fbox, boxrule=1pt, pad at break*=1mm,colback=cellbackground, colframe=cellborder]
+\prompt{In}{incolor}{5}{\boxspacing}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PY{k+kn}{from} \PY{n+nn}{qiskit} \PY{k+kn}{import} \PY{n}{transpile}
+\PY{k+kn}{from} \PY{n+nn}{qiskit}\PY{n+nn}{.}\PY{n+nn}{visualization} \PY{k+kn}{import} \PY{n}{plot\PYZus{}histogram}
+\PY{k+kn}{from} \PY{n+nn}{qiskit\PYZus{}ibm\PYZus{}runtime}\PY{n+nn}{.}\PY{n+nn}{fake\PYZus{}provider} \PY{k+kn}{import} \PY{n}{FakeManilaV2}
+
+\PY{c+c1}{\PYZsh{} A fake 5 qubit backend.}
+\PY{n}{backend} \PY{o}{=} \PY{n}{FakeManilaV2}\PY{p}{(}\PY{p}{)}
+\PY{n}{shots} \PY{o}{=} \PY{l+m+mi}{2048}
+\PY{n}{transpiled\PYZus{}qc} \PY{o}{=} \PY{n}{transpile}\PY{p}{(}\PY{n}{circuit}\PY{p}{,} \PY{n}{backend}\PY{p}{,} \PY{n}{optimization\PYZus{}level}\PY{o}{=}\PY{l+m+mi}{3}\PY{p}{)}
+
+\PY{n}{job} \PY{o}{=} \PY{n}{backend}\PY{o}{.}\PY{n}{run}\PY{p}{(}\PY{n}{transpiled\PYZus{}qc}\PY{p}{,} \PY{n}{shots}\PY{o}{=}\PY{n}{shots}\PY{p}{)}
+
+\PY{n}{counts} \PY{o}{=} \PY{n}{job}\PY{o}{.}\PY{n}{result}\PY{p}{(}\PY{p}{)}\PY{o}{.}\PY{n}{get\PYZus{}counts}\PY{p}{(}\PY{p}{)}
+\PY{n}{plot\PYZus{}histogram}\PY{p}{(}\PY{n}{counts}\PY{p}{)}
+\end{Verbatim}
+\end{tcolorbox}
+ 
+            
+\prompt{Out}{outcolor}{5}{}
+    
+    \begin{center}
+    \adjustimage{max size={0.9\linewidth}{0.9\paperheight}}{output_9_0.png}
+    \end{center}
+    { \hspace*{\fill} \\}
+    
+
+    And we recover 5 as 101!

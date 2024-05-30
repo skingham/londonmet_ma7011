@@ -1,0 +1,53 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}
+When Peter Shor published his original paper in \citeyear{Shor:1994} \cite{Shor:1994} -- and then his expanded paper 
+\citetitle{Shor:1994} in \citeyear{Shor:1997} \cite{Shor:1997} -- not only were there no actual
+quantum computers in existence, but quantum computing research was in a nascent state.  Shor himself details the
+development of the idea of using quantum mechanics for computation in the early 1980s by Benioff \cite{Benioff:1982}
+and the suggestion by Feynman \cite{Feynman:1986} that quantum mechanics might be computationally more powerful
+than Turing machines.  
+
+A brace of papers in the early 1990s by Deutsch and Jozsa \cite{Deutsch:1992} and Berthiaume and Brassard
+\cite{Berthiaume:1992} went further showing that a quantum computer could solve exactly and quickly a class of 
+problems -- \emph{bounded error probability probabilistic polynomial time} (BPP) problems  -- that classical computers
+can solve quickly only with high probability by using randomness \cite{Babai:1993}, and demonstrated this using the
+\emph{oracle problem}.
+
+Shor's papers went substantially further by taking inspiration from from Simon's 1994 paper \citetitle{Simon:1994}
+\cite{Simon:1994} which refined the oracle problem and who demonstrated a quantum solution in polynomial time that
+would require exponential time on a classical computer.  Shor tackled two number theory problems that underpin the
+Diffie-Helman \cite{Diffie:1976}, RSA \cite{Rivest:1978}, and ElGamal \cite{ElGamal:1985} public key encryption
+and digital signature schemes; namely quantum algorithms for finding discrete logarithms and factoring integers.
+
+Following on from Shor, \citeauthor{Grover:1996} \citeyear{Grover:1996} \cite{Grover:1996} proved that quantum computers
+could perform an unstructured search with a quadratic speedup over a classical computing search
+($O(\sqrt{N})$ vs $O(N)$.)  Whilst not reducing an exponential problem to a polynomial time problem, it still does
+allow some practical brute-force attacks.
+
+Because of the importance of both of these quantum circuits in breaking classical encryption schemes it is
+important to understand their construction from a practical vantage point.  These quantum algorithms provide a floor
+from which new research can be expected to find better and faster quantum algorithms.  Having exposure to these
+quantum circuit ideas should also help in understanding why new \emph{post-quantum cryptography} (PQC) schemes from
+NIST \cite{NIST:2022} are currently thought to be immune to quantum computer attacks.
+
+Current quantum computers, while not at the point of quantum supremacy, will become more powerful each year as the
+technology advances.  These advances are being made available to researchers and students through various quantum
+computing simulators \cite{Dargan:2022}, and  both IBM \cite{IBM:2024a} and Google
+\cite{Google:2024a} have software development kits (SDKs) for python that allow quantum circuits to be designed and
+run on real quantum computing hardware and quantum simulators.  This paper is seeks to demonstrate how to implement
+Shor's and Grover's algorithms using IBM's \emph{Quantum Information Science Kit} (QISKIT) SDK.
+
+The rest of the paper is organised as follows. Section 2 is an overview of the quantum computing concepts needed to
+understand the SDK and the implementation of the Shor and Grover algorithms.  Section 3 develops the actual code that runs on IBMs
+systems and shows the results, demonstrating the the power and some limitations using the current generation of
+quantum computers.  Section 4 is a review of the current mathematical cryptographic techniques and why they are
+thought to be immune to being broken by quantum computing.  Section 5 is the conclusion and my thoughts on what I
+have learnt writing this report.
+
+
+% \begin{figure}[!ht] % Single column figure
+%   %\includegraphics[width=0.95\textwidth]{statistic_id267132_annual-amount-of-financial-damage-caused-by-reported-cybercrime-in-us-2001-2022.png}\hfill
+%   \includesvg[width=0.95\textwidth]{Lattice-reduction}\hfill
+%   \caption{Latice Reduction \autocite{Wikipedia:2021}  Source: Wikipedia.}
+%   \label{fig:lattice-reduction}
+% \end{figur\subsection{Post-Quantum Cryptography}

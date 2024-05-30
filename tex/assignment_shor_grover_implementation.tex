@@ -1,0 +1,160 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{QISKIT Quantum Circuit Implementations}
+
+The IBM Quantum Platform was made available to the public in May 2016 \cite{IBM:2016b} and was composed of five
+superconducting qubits and was housed at the IBM T.J. Watson Research Center in New York.
+
+They make available real quantum computer resources, such as the recently release 'IBM Quantum Eagle' 127-qubit processor
+and their 133-qubit Heron processor, with the desire to help users to \enquote{push the boundaries of more complex problems}.
+
+The material in this section used the \emph{IBM Quantum Learning} course \emph{Phase Estimation and factoring} \cite{Qiskit:2024a} as a guide.
+
+
+\subsection{Constructing Circuits \& the Quantum Fourier Transform}
+
+The SDK has evolved over time and offers a rich set of tools to construct quantum circuits and platforms to run circuits on
+real hardware, along with simulated systems that are calibrated to real systems, and can be used to simulate idea and noisy
+quantum machines.  There is far to much in these SDKs to do more than scratch the surface.
+
+The workflow we will be using is primarily:
+
+\begin{enumerate}
+\item Construct quantum circuits to represent gates, operators and algorithms.
+\item Perform analysis on these circuits to check and understand the quantum states.
+\item Provision backend services, either real or simulated, with particular properties such as qubit size and noise/error
+  characteristics.
+\item Run our quantum algorithm.
+\item Measure results and report on the outcome of the experiments.
+\end{enumerate}
+
+\subsection{Quantum Fourier Transform}
+
+All code for this section is in Appendix B.
+
+As we have already seen, the \emph{Quantum Fourier Transform} (QFT) is a key building block for many algorithms, including
+Shor's algorithm for matrix inversion.  We have seen the single qubit Hadamard gate to bring a qubit into an equal superposition
+of state.  The second gate we need is a two-qubit controlled rotation \emph{$CROT_k$} to perform the phase shift.
+
+We can manually build up the circuit by calling methods on the circuit object, building gates and connections:
+
+%caption=First stage of the QFT circiut,[language=python]
+\singlespace
+%\begin{lstlisting}
+\inputminted{python}{tex/code/qft-stage-1.py}
+\label{listing:py1}
+%\end{lstlisting}
+\doublespacing
+
+\begin{figure}[H] % Single column figure
+   \includegraphics[width=0.35\textwidth]{appendix_qiskit_intro/output_3_0.png}\hfill
+   \caption{First stage of the QFT circuit.}
+   \label{fig:qft-stage-1}
+\end{figure}
+
+\subsubsection{Encoding Inputs onto a Circuit}
+
+To set an input value we need to encode the value $5$ onto the qubits.  The Hadamard gate leaves all states equally likely.
+This can be accomplished by applying the required phase shift to each qubit with a command like
+\texttt{circuit.p(5*pi/4,0)} and we encode the state vector $ | \tilde{5} \rangle $:
+
+\begin{figure}[H] % Single column figure
+   \includegraphics[width=0.30\textwidth]{appendix_qiskit_intro/output_4_0.png}\hfill
+   \caption{Qubits in Fourier state $ | \tilde{5} \rangle $. }
+   \label{fig:fourier-state-1}
+\end{figure}
+
+We can visulise this as a Bloch state vector for our three qubits:
+
+\begin{figure}[H] % Single column figure
+   \includegraphics[width=0.95\textwidth]{appendix_qiskit_intro/output_6_0.png}\hfill
+   \caption{Bloch state vector for $ | \tilde{5} \rangle $.}
+   \label{fig:bloch-1}
+\end{figure}
+
+\subsubsection{Using Pretested Quantum Circuit Components}
+
+It is not necessary to construct a QFT circuit by hand.  We can construct QFT and inverse QFT components
+using classes defined within the SDK more simply and with less chance of errors:
+
+\singlespace
+\begin{minted}
+  {python}
+from qiskit.circuit.library import QFT
+qft = QFT(num_qubits=3, approximation_degree=0, do_swaps=True,
+          inverse=True, insert_barriers=False, name='qft').to_gate()
+circuit.append(qft)
+\end{minted}
+\doublespacing
+
+\subsubsection{Running the Circuit}
+
+The task we want to perform is to run the inverted QFT algo and recover the value $5$ from the system.
+
+For a three cubit circuit we can simulate this on the 5-qubit system \texttt{qiskit\_ibm\_runtime.fake\_provider import FakeManilaV2}.
+
+We transpile our circuit into something that our selected backend will run, then execute the algorithm:
+
+\singlespace
+\begin{minted}
+  {python}
+backend = FakeManilaV2()
+shots = 2048
+transpiled_qc = transpile(circuit, backend, optimization_level=3)
+job = backend.run(transpiled_qc, shots=shots)
+
+counts = job.result().get_counts()
+plot_histogram(counts)
+\end{minted}
+\doublespacing
+
+\begin{figure}[H] % Single column figure
+   \includegraphics[width=0.95\textwidth]{appendix_qiskit_intro/output_8_0.png}\hfill
+   \includegraphics[width=0.95\textwidth]{appendix_qiskit_intro/output_9_0.png}\hfill
+   \caption{Full inverse QFT circuit and measurement histogram.}
+   \label{fig:iqft-hist-1}
+\end{figure}
+
+And we see we recover the value $101$.
+
+
+\subsection{Grover}
+
+All code and results for this section is in Appendix C.
+
+For the Grover algorithm, from the QISKIT `qiskit.circuit.library` we have a number of gates and operators that simplify the construction
+of the algorithm.  What we are left to do is to build is the oracle to mark the required states (details in appendix).
+
+In this example we have a 3-qubit system, and select two states - \texttt{['011', '100']} for the oracle to mark.  This is done using the
+multi-controlled multi-target gate `MCMT`.  The given routine `grover\_operation` generates the following quantum circuit where the marked states
+can be seen encoded as inverted binary values on the first and last stage: 
+
+\begin{figure}[H] % Single column figure
+   \includegraphics[width=0.45\textwidth]{appendix_grover_circuit/output_7_0.png}\hfill
+   %\includesvg[width=0.95\textwidth]{Lattice-reduction}\hfill
+   \caption{Grover oracle circuit.}
+   \label{fig:grover-opertor}
+\end{figure}
+
+We calculate the optimal number of iterations and QISKIT primitives can then knit our grover operator into the following gate
+construction:
+
+\begin{figure}[H] % Single column figure
+   \includegraphics[width=0.95\textwidth]{appendix_grover_circuit/output_15_0.png}\hfill
+   %\includesvg[width=0.95\textwidth]{Lattice-reduction}\hfill
+   \caption{Final Grover circuit with repeated Grover operators.}
+   \label{fig:grover-gate}
+\end{figure}
+
+Looking only at the Hadamard gate initialisers, and the completed Grover gate as one diagram element, we can see the quantum measurements
+instrumentation:
+
+\begin{figure}[H] % Single column figure
+   \includegraphics[width=0.95\textwidth]{appendix_grover_circuit/output_13_0.png}\hfill
+   \includegraphics[width=0.95\textwidth]{appendix_grover_circuit/output_19_0.png}\hfill
+   %\includesvg[width=0.95\textwidth]{Lattice-reduction}\hfill
+   \caption{High level circuit and resultant measurement histogram.}
+   \label{fig:grover-histogram}
+\end{figure}
+
+After running the algorithm we find, as expected, the marked states appearing with the highest probabilities.
+

@@ -1,0 +1,192 @@
+\documentclass{article}
+
+\usepackage[english]{babel}
+\usepackage[a4paper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+% Useful packages
+% Harvard \usepackage[backend=biber, sorting=nyt, style=authoryear-ibid]{biblatex}
+\usepackage[backend=biber, sorting=nyt, style=ieee]{biblatex}
+\usepackage[inkscapeformat=png]{svg}
+\usepackage[outputdir=pdf]{minted}
+\usepackage{graphicx}
+\graphicspath{ {figures/} }
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{parskip}
+\usepackage{float}
+\floatplacement{figure}{H} % forces figures to be placed at the correct location
+\usepackage{listings}
+\usepackage{lipsum}
+\usepackage{setspace}
+\doublespacing
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{fontspec}
+\usepackage{fontawesome5}
+
+\usepackage{amsmath,amssymb}
+\usepackage{csquotes}
+\usepackage{mathtools}
+\usepackage{blkarray, bigstrut}
+
+\ifPDFTeX
+  \usepackage[T1]{fontenc}    % Output font encoding for international characters
+  \usepackage[utf8]{inputenc} % Required for inputting international characters
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+
+\usepackage{jupyter}
+
+% Document style
+%\usepackage{palatino} % Use the Palatino font
+%\usepackage{microtype} % Improves spacing
+%\usepackage[bf,sf,center]{titlesec} % Required for modifying section titles - bold, sans-serif, centered
+%\usepackage{fancyhdr} % Required for modifying headers and footers
+%\fancyhead[L]{\textsf{\rightmark}} % Top left header
+%\fancyhead[R]{\textsf{\leftmark}} % Top right header
+%\renewcommand{\headrulewidth}{1.4pt} % Rule under the header
+%\fancyfoot[C]{\textbf{\textsf{\thepage}}} % Bottom center footer
+%\renewcommand{\footrulewidth}{1.4pt} % Rule under the footer
+%\pagestyle{fancy} % Use the custom headers and footers throughout the document
+
+% Appendix dictionary template: print each word on the page
+% \markboth{}{} prints the first word on the page in the top left header and the last word in the top right
+%\newcommand{\entry}[4]{\markboth{#1}{#1}\textbf{#1}\ {(#2)}\ \textit{#3}\ $\bullet$\ {#4}}
+\newcommand{\entry}[2]{\markboth{#1}{#1}\textbf{#1}\ $\bullet$\ {#2}}
+
+
+%----------------------------------------------------------------------------------------
+%
+% Your submission should be between 1500 and 2000 words and I would expect you to cover:
+% 
+% Background and explanation of the topic; this should summarise the material presented in the module and your additional reading;
+%
+% Details of at least one algorithm associated with the topic;
+%
+% Implications for future developments in cryptography;
+%
+% Legal, social and ethical issues associated with your chosen topic.
+%
+% You should include a short bibliography listed in a standard referencing style (e.g. Harvard System).
+%
+%----------------------------------------------------------------------------------------
+
+%\bibliography{references}
+\addbibresource{references.bib}
+
+\title{MA7011 – Applications in Cryptography and Cryptanalysis Quantum Simulation of Cryptographic Algorithms}
+\author{Stuart Kingham: ID 21014912}
+
+\begin{document}
+\doublespacing
+
+%\begin{center}
+%{\LARGE Current and emerging online cyber-attacks, threats, and criminal acts, including related digital crimes}
+%\end{center} 
+%\vspace*{\fill}
+
+
+%\maketitle
+\begin{titlepage}
+  \topskip0pt
+  \vspace*{\fill}
+  \begin{center}
+       \vspace*{1cm}
+
+       {\LARGE Applications in Cryptography and Cryptanalysis}
+
+       \vspace*{1cm}
+       {\large \textbf{Practical Quantum Circuits that Break Cryptography}}
+       
+       \vspace{0.2cm}
+       {\large An Investigation into the Implementation of Quantum Circuits}
+            
+       %\vspace{1.5cm}
+
+       \vfill
+
+       \textbf{Stuart Kingham: ID 2101491}
+
+       \vfill
+                        
+       \vspace{0.8cm}
+     
+       %\includegraphics[width=0.4\textwidth]{university}
+
+       MA7011: Applications in Cryptography and Cryptanalysis \\
+       School of Computing and Digital Media\\
+       London Metropolitan University\\
+       May 10, 2024
+            
+  \end{center}
+  \vspace*{\fill}
+\end{titlepage}
+
+\pagebreak
+
+\begin{abstract}
+  In this paper I look at back to Shor's original paper on the quantum
+  calculation of the discrete logarithm problem and integer
+  factorisation and use the IBM quantum computing SDK \emph{QISKIT} to
+  implement the algorithm.
+\end{abstract}
+
+\newpage
+
+\singlespacing 
+\tableofcontents
+\listoffigures
+%\listoftables
+\doublespacing
+
+\pagenumbering{roman}
+\pagenumbering{arabic}
+\newpage
+
+\input{assignment_introduction}
+
+% Section 2 is an overview of the quantum computing concepts needed to understand the SDK
+% and the implementation of the two circuits.
+\input{assignment_quantum_computing_concepts}
+
+% \pagebreak
+% Section 3 develops the actual code that runs on IBMs systems and shows the results, 
+% demonstrating the speedups and the practical limitations on the current generation of quantum computers.
+\input{assignment_shor_grover_implementation}
+
+% Section 4 is a review of the 
+% current mathematical cryptographic techniques and why they are thought to be immune to being broken by quantum computing.
+\input{assignment_post_quantum_cryptography}
+
+\input{assignment_conclusion}
+
+\pagebreak
+
+\printbibliography
+
+\pagebreak
+
+\appendix
+
+\input{appendix_environment}
+
+\singlespace
+\graphicspath{ {appendix_qiskit_intro/} }
+\input{appendix_qiskit_intro/assignment_qiskit_intro}
+
+%\graphicspath{ {appendix_shor_circuit/} }
+%\input{appendix_shor_circuit/assignment_shor_circuit}
+
+\graphicspath{ {appendix_grover_circuit/} }
+\input{appendix_grover_circuit/assignment_grover_circuit}
+
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
